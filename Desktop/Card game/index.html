@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>&#9824; Card Game</h1>
+    <div class="header-controls">
+      <div class="label-controls">
+        <span>Labels:</span>
+        <button class="ctrl-btn" id="btn-dec">&#8722;</button>
+        <span id="label-count">4</span>
+        <button class="ctrl-btn" id="btn-inc">&#43;</button>
+      </div>
+      <div class="label-controls">
+        <span>Cards:</span>
+        <button class="ctrl-btn" id="btn-card-dec">&#8722;</button>
+        <span id="card-count">5</span>
+        <button class="ctrl-btn" id="btn-card-inc">&#43;</button>
+      </div>
+      <div class="deck-presets">
+        <button class="preset-btn" data-preset="0">6+</button>
+        <button class="preset-btn" data-preset="1">7+</button>
+        <button class="preset-btn" data-preset="2">8+</button>
+        <button class="preset-btn" data-preset="3">9+</button>
+        <button class="preset-btn" data-preset="4">10+</button>
+        <button class="preset-btn active" data-preset="5">Full</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="status-bar">Click any card to assign it automatically</div>
+
+  <div class="main">
+    <div class="labels-panel" id="labels-panel">
+      <div class="panel-title">Label Slots</div>
+    </div>
+    <div class="cards-panel" id="cards-panel">
+      <div class="panel-title">Playing Cards</div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+
+</body>
+</html>
