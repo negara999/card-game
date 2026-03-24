@@ -295,7 +295,7 @@ function miniCardHTML(id) {
       : `<div class="split-sub-slot"><button class="split-plus-btn${isAct1 ? ' active' : ''}" data-split-id="${id}" data-half="1">+</button></div>`;
     return `<div class="mini-card split-mini" data-card-id="${id}">
       <div class="split-mini-header">SPLIT<i class="rm" data-card-id="${id}">&#215;</i></div>
-      <div class="split-sub-halves">${half0}${half1}</div>
+      <div class="split-sub-halves" style="display:flex;flex-direction:row;flex-wrap:nowrap;flex:1;">${half0}${half1}</div>
     </div>`;
   }
   if (id.startsWith('BLACK|')) {
