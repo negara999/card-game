@@ -520,8 +520,8 @@ header h1 {
   flex-direction: column;
   background: white;
   border-color: #bbb;
-  width: 42px;
-  height: 60px;
+  width: 70px;
+  height: 52px;
   cursor: pointer;
 }
 .split-mini::before { display: none; }
@@ -545,7 +545,9 @@ header h1 {
 .split-sub-halves {
   display: flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   flex: 1;
+  min-height: 0;
 }
 
 .split-sub-slot {
