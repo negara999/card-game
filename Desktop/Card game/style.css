@@ -484,6 +484,7 @@ header h1 {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
 }
 .split-half {
   flex: 1;
@@ -491,7 +492,7 @@ header h1 {
   align-items: center;
   justify-content: center;
 }
-.split-left  { background: #1a1a2e; border-right: 1px solid #555; }
+.split-left  { background: #1a1a2e; border-bottom: 1px solid #555; }
 .split-right { background: #0f3460; }
 .split-sub-label {
   font-size: 18px;
@@ -543,7 +544,7 @@ header h1 {
 
 .split-sub-halves {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex: 1;
 }
 
@@ -552,15 +553,27 @@ header h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  color: rgba(0,0,0,0.2);
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  border-right: 1px solid #eee;
+  pointer-events: none; /* slot background is transparent — only the button inside is clickable */
 }
-.split-sub-slot:last-child { border-bottom: none; }
-.split-sub-slot:hover { background: rgba(0,0,0,0.04); color: rgba(0,0,0,0.4); }
-.split-sub-slot.active { background: rgba(233,69,96,0.08); color: #e94560; }
+.split-sub-slot:last-child { border-right: none; }
+
+.split-plus-btn {
+  pointer-events: auto;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  color: #aaa;
+  padding: 0;
+}
+.split-plus-btn:hover { background: #e8e8e8; color: #555; }
+.split-plus-btn.active { background: rgba(233,69,96,0.12); border-color: #e94560; color: #e94560; }
 
 .split-sub-filled {
   flex: 1;
@@ -571,10 +584,10 @@ header h1 {
   font-weight: bold;
   font-family: Arial, sans-serif;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
   transition: background 0.12s;
 }
-.split-sub-filled:last-child { border-bottom: none; }
+.split-sub-filled:last-child { border-right: none; }
 .split-sub-filled:hover { background: rgba(0,0,0,0.06); }
 .split-sub-filled .red   { color: #cc1111; }
 .split-sub-filled .black { color: #111; }
@@ -628,8 +641,17 @@ header h1 {
 .blank-mini {
   border: 1.5px dashed #ccc;
   background: #f5f5f5;
+  cursor: pointer !important;
 }
 .blank-mini::before { display: none; }
+.blank-text {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #bbb;
+  font-family: Arial, sans-serif;
+  pointer-events: none;
+}
 
 /* ══════════════════════════════
    MINI CARD (inside label slot)

@@ -237,42 +237,31 @@ function renderLabels() {
     });
   });
 
-  // Click mini-card body → unassign (sub-halves use stopPropagation)
-  panel.querySelectorAll('.mini-card:not(.black-mini)').forEach(mc => {
-    mc.addEventListener('click', e => {
-      if (e.target.closest('.rm') || e.target.closest('.split-sub-halves')) return;
-      unassignCard(mc.dataset.cardId);
-    });
-  });
-
-  // Black mini card — dedicated handler to ensure click-to-remove works
-  panel.querySelectorAll('.black-mini').forEach(mc => {
-    mc.addEventListener('click', e => {
-      if (!e.target.closest('.rm')) unassignCard(mc.dataset.cardId);
-    });
-  });
-
-  // Click empty split sub-slot → activate fill mode for that half
-  panel.querySelectorAll('.split-sub-slot').forEach(slot => {
-    slot.addEventListener('click', e => {
+  // "+" button in split → activate fill mode; stopPropagation so card body click doesn't also fire
+  panel.querySelectorAll('.split-plus-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
       e.stopPropagation();
-      const splitId = slot.dataset.splitId;
-      const half    = +slot.dataset.half;
-      if (activeSplitTarget && activeSplitTarget.splitId === splitId && activeSplitTarget.half === half) {
-        activeSplitTarget = null;
-      } else {
-        activeSplitTarget = { splitId, half };
-      }
+      const splitId = btn.dataset.splitId;
+      const half    = +btn.dataset.half;
+      activeSplitTarget = (activeSplitTarget && activeSplitTarget.splitId === splitId && activeSplitTarget.half === half)
+        ? null : { splitId, half };
       renderLabels();
       updateStatus();
     });
   });
 
-  // Click filled split sub-card → remove that sub-card
+  // Filled sub-card → remove it; stopPropagation so card body click doesn't also fire
   panel.querySelectorAll('.split-sub-filled').forEach(filled => {
     filled.addEventListener('click', e => {
       e.stopPropagation();
       removeSplitSubCard(filled.dataset.subCardId);
+    });
+  });
+
+  // All mini-cards: click anywhere → unassign (children use stopPropagation so they won't trigger this)
+  panel.querySelectorAll('.mini-card').forEach(mc => {
+    mc.addEventListener('click', e => {
+      if (!e.target.closest('.rm')) unassignCard(mc.dataset.cardId);
     });
   });
 
@@ -300,10 +289,10 @@ function miniCardHTML(id) {
     const isAct1 = activeSplitTarget && activeSplitTarget.splitId === id && activeSplitTarget.half === 1;
     const half0 = c0
       ? `<div class="split-sub-filled" data-sub-card-id="${c0}">${splitSubLabel(c0)}</div>`
-      : `<div class="split-sub-slot${isAct0 ? ' active' : ''}" data-split-id="${id}" data-half="0">+</div>`;
+      : `<div class="split-sub-slot"><button class="split-plus-btn${isAct0 ? ' active' : ''}" data-split-id="${id}" data-half="0">+</button></div>`;
     const half1 = c1
       ? `<div class="split-sub-filled" data-sub-card-id="${c1}">${splitSubLabel(c1)}</div>`
-      : `<div class="split-sub-slot${isAct1 ? ' active' : ''}" data-split-id="${id}" data-half="1">+</div>`;
+      : `<div class="split-sub-slot"><button class="split-plus-btn${isAct1 ? ' active' : ''}" data-split-id="${id}" data-half="1">+</button></div>`;
     return `<div class="mini-card split-mini" data-card-id="${id}">
       <div class="split-mini-header">SPLIT<i class="rm" data-card-id="${id}">&#215;</i></div>
       <div class="split-sub-halves">${half0}${half1}</div>
@@ -317,7 +306,7 @@ function miniCardHTML(id) {
   }
   if (id.startsWith('BLANK|')) {
     return `<div class="mini-card blank-mini" data-card-id="${id}">
-      <span class="mr" style="font-size:7px;letter-spacing:1px;color:#bbb;">BLANK</span>
+      <span class="blank-text">BLANK</span>
       <i class="rm" data-card-id="${id}">&#215;</i>
     </div>`;
   }
