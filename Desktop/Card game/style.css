@@ -277,7 +277,8 @@ header h1 {
   justify-content: center;
 }
 
-.card-suit-club { background: #d4aa00; }
+.card-suit-club    { background: #b8d4a0; }
+.card-suit-diamond { background: #c8dce8; }
 
 .card::before { display: none; }
 
@@ -624,7 +625,8 @@ header h1 {
 .mini-card.suit-club    .mr, .mini-card.suit-club    .ms { color: #111; }
 .mini-card.suit-diamond .mr, .mini-card.suit-diamond .ms { color: #d44fa0; }
 
-.mini-card.suit-club { background: #d4aa00; }
+.mini-card.suit-club    { background: #b8d4a0; }
+.mini-card.suit-diamond { background: #c8dce8; }
 
 .blank-mini { border: 1.5px dashed #ccc; background: #f5f5f5; }
 .blank-mini::before { display: none; }
