@@ -593,7 +593,7 @@ header h1 {
 .mini-card {
   width: 38px;
   height: 52px;
-  background: white;
+  background: #c9a87c;
   border-radius: 4px;
   border: 1px solid #bbb;
   display: flex;
@@ -623,6 +623,8 @@ header h1 {
 .mini-card.suit-heart   .mr, .mini-card.suit-heart   .ms { color: #cc1111; }
 .mini-card.suit-club    .mr, .mini-card.suit-club    .ms { color: #111; }
 .mini-card.suit-diamond .mr, .mini-card.suit-diamond .ms { color: #d44fa0; }
+
+.mini-card.suit-club { background: #d4aa00; }
 
 .blank-mini { border: 1.5px dashed #ccc; background: #f5f5f5; }
 .blank-mini::before { display: none; }
