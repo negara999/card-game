@@ -279,7 +279,7 @@ header h1 {
 
 .card-suit-spade   { background: #f5f0e6; }
 .card-suit-club    { background: #e8c84a; }
-.card-suit-diamond { background: #c8dce8; }
+.card-suit-diamond { background: #1b2a4a; }
 
 .card::before { display: none; }
 
@@ -628,7 +628,7 @@ header h1 {
 
 .mini-card.suit-spade   { background: #f5f0e6; }
 .mini-card.suit-club    { background: #e8c84a; }
-.mini-card.suit-diamond { background: #c8dce8; }
+.mini-card.suit-diamond { background: #1b2a4a; }
 
 .blank-mini { border: 1.5px dashed #ccc; background: #f5f5f5; }
 .blank-mini::before { display: none; }
