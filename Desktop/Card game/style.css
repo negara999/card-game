@@ -615,7 +615,7 @@ header h1 {
   pointer-events: none;
 }
 .mini-card { cursor: pointer; }
-.mini-card:hover { transform: translateY(-3px); }
+.mini-card:hover { transform: scale(1.18); z-index: 10; }
 
 .mr { font-size: 13px; font-weight: bold; font-family: Arial; line-height: 1.1; }
 .ms { font-size: 13px; line-height: 1; }
