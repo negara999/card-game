@@ -61,45 +61,19 @@ function buildCard(suit, rank) {
   const id     = cid(suit, rank);
   const c      = clr(suit);
   const placed = isPlaced(id);
-  const isFace = FACE_RANKS.has(rank);
 
   const div = document.createElement('div');
   div.className = `card${placed ? ' placed' : ''}`;
   div.dataset.cardId = id;
 
   div.innerHTML = `
-    <div class="cc tl ${c}">
-      <span class="cr">${rank}</span>
-      <span class="cs">${suit}</span>
-    </div>
-    ${isFace ? faceHTML(rank, suit, c) : pipsHTML(rank, suit, c)}
-    <div class="cc br ${c}">
-      <span class="cr">${rank}</span>
-      <span class="cs">${suit}</span>
+    <div class="card-center">
+      <span class="card-rank ${c}">${rank}</span>
+      <span class="card-suit ${c}">${suit}</span>
     </div>`;
 
   div.addEventListener('click', () => onCardClick(id));
   return div;
-}
-
-function pipsHTML(rank, suit, c) {
-  const layout = PIP_LAYOUTS[rank];
-  const isAce  = rank === 'A';
-  return `<div class="pips">${
-    layout.map(([l, t, flip]) =>
-      `<span class="pip ${c}${isAce ? ' pip-a' : ''}${flip ? ' pip-flip' : ''}" style="left:${l}%;top:${t}%">${suit}</span>`
-    ).join('')
-  }</div>`;
-}
-
-function faceHTML(rank, suit, c) {
-  return `
-    <div class="face-inner ${c} face-${rank.toLowerCase()}">
-      <span class="face-suits">${suit} ${suit}</span>
-      <span class="face-icon">${FACE_ICONS[rank]}</span>
-      <span class="face-letter">${rank}</span>
-      <span class="face-suits flip">${suit} ${suit}</span>
-    </div>`;
 }
 
 /* ── Auto-assign on click ── */
