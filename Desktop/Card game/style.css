@@ -262,13 +262,13 @@ header h1 {
 .card {
   width: 52px;
   height: 74px;
-  background: #ffffff;
+  background: #2a2a3e;
   border-radius: 6px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid rgba(255,255,255,0.12);
   position: relative;
   cursor: pointer;
   user-select: none;
-  box-shadow: 1px 2px 6px rgba(0,0,0,0.35);
+  box-shadow: 1px 2px 6px rgba(0,0,0,0.5);
   transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
   flex-shrink: 0;
   overflow: hidden;
@@ -300,8 +300,8 @@ header h1 {
   line-height: 1;
 }
 
-.card-rank.red, .card-suit.red { color: #cc1111; }
-.card-rank.black, .card-suit.black { color: #111111; }
+.card-rank.red, .card-suit.red { color: #e05555; }
+.card-rank.black, .card-suit.black { color: #ffffff; }
 
 .card:hover:not(.placed) {
   transform: translateY(-7px);
