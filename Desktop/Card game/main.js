@@ -69,7 +69,7 @@ function buildCard(suit, rank) {
   const placed = isPlaced(id);
 
   const div = document.createElement('div');
-  div.className = `card${placed ? ' placed' : ''}`;
+  div.className = `card card-${clr(suit)}${placed ? ' placed' : ''}`;
   div.dataset.cardId = id;
 
   div.innerHTML = `
