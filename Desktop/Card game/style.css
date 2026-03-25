@@ -262,9 +262,9 @@ header h1 {
 .card {
   width: 52px;
   height: 74px;
-  background: #2a2a3e;
+  background: #ffffff;
   border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid #d0d0d0;
   position: relative;
   cursor: pointer;
   user-select: none;
@@ -300,8 +300,10 @@ header h1 {
   line-height: 1;
 }
 
-.card-rank.red, .card-suit.red { color: #e05555; }
-.card-rank.black, .card-suit.black { color: #ffffff; }
+.card-rank.suit-spade,   .card-suit.suit-spade   { color: #1a7a1a; }
+.card-rank.suit-heart,   .card-suit.suit-heart   { color: #cc1111; }
+.card-rank.suit-club,    .card-suit.suit-club    { color: #111111; }
+.card-rank.suit-diamond, .card-suit.suit-diamond { color: #d44fa0; }
 
 .card:hover:not(.placed) {
   transform: translateY(-7px);
@@ -517,8 +519,10 @@ header h1 {
 }
 .split-sub-filled:last-child { border-right: none; }
 .split-sub-filled:hover { background: rgba(0,0,0,0.06); }
-.split-sub-filled .red   { color: #cc1111; }
-.split-sub-filled .black { color: #111; }
+.split-sub-filled .suit-spade   { color: #1a7a1a; }
+.split-sub-filled .suit-heart   { color: #cc1111; }
+.split-sub-filled .suit-club    { color: #111; }
+.split-sub-filled .suit-diamond { color: #d44fa0; }
 
 /* ── Black card ── */
 .black-card {
@@ -613,8 +617,10 @@ header h1 {
 
 .mr { font-size: 13px; font-weight: bold; font-family: Arial; line-height: 1.1; }
 .ms { font-size: 13px; line-height: 1; }
-.mini-card.red   .mr, .mini-card.red   .ms { color: #cc1111; }
-.mini-card.black .mr, .mini-card.black .ms { color: #111; }
+.mini-card.suit-spade   .mr, .mini-card.suit-spade   .ms { color: #1a7a1a; }
+.mini-card.suit-heart   .mr, .mini-card.suit-heart   .ms { color: #cc1111; }
+.mini-card.suit-club    .mr, .mini-card.suit-club    .ms { color: #111; }
+.mini-card.suit-diamond .mr, .mini-card.suit-diamond .ms { color: #d44fa0; }
 
 .blank-mini { border: 1.5px dashed #ccc; background: #f5f5f5; }
 .blank-mini::before { display: none; }

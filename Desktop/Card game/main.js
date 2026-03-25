@@ -52,7 +52,13 @@ function isPlaced(id)  { return (id in assignments) || isInSplit(id); }
 function countAssigned(i) { return Object.values(assignments).filter(x => x === i).length; }
 
 function isRed(suit)     { return RED_SUITS.has(suit); }
-function clr(suit)       { return isRed(suit) ? 'red' : 'black'; }
+function clr(suit)       {
+  if (suit === '♠') return 'suit-spade';
+  if (suit === '♥') return 'suit-heart';
+  if (suit === '♣') return 'suit-club';
+  if (suit === '♦') return 'suit-diamond';
+  return 'suit-spade';
+}
 function cid(suit, rank) { return `${rank}|${suit}`; }
 function parseId(id)     { const [rank, suit] = id.split('|'); return { rank, suit }; }
 
