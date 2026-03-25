@@ -263,10 +263,6 @@ header h1 {
   width: 52px;
   height: 74px;
   background: #c9a87c;
-}
-
-.card-suit-club {
-  background: #d4aa00;
   border-radius: 6px;
   border: 1px solid #d0d0d0;
   position: relative;
@@ -280,6 +276,8 @@ header h1 {
   align-items: center;
   justify-content: center;
 }
+
+.card-suit-club { background: #d4aa00; }
 
 .card::before { display: none; }
 
