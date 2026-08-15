@@ -68,20 +68,24 @@ function clr(suit)       {
 function cid(suit, rank) { return `${rank}|${suit}`; }
 function parseId(id)     { const [rank, suit] = id.split('|'); return { rank, suit }; }
 
-/* ── Build a card DOM element ── */
-function buildCard(suit, rank) {
+/* ── Build a deck-line card (overlapping, interactive) ── */
+const DECK_STEP_X = 16;
+
+function buildCard(suit, rank, index) {
   const id     = cid(suit, rank);
   const c      = clr(suit);
   const placed = isPlaced(id);
 
   const div = document.createElement('div');
-  div.className = `card card-${clr(suit)}${placed ? ' placed' : ''}`;
+  div.className = `deck-card ${c}${placed ? ' placed' : ''}`;
   div.dataset.cardId = id;
+  div.style.left   = `${index * DECK_STEP_X}px`;
+  div.style.zIndex = index;
 
   div.innerHTML = `
-    <div class="card-center">
-      <span class="card-rank ${c}">${rank}</span>
-      <span class="card-suit ${c}">${suit}</span>
+    <div class="deck-corner">
+      <span class="dr">${rank}</span>
+      <span class="ds">${suit}</span>
     </div>`;
 
   div.addEventListener('click', () => onCardClick(id));
@@ -368,34 +372,6 @@ function splitSubLabel(cardId) {
   return `<span class="${clr(suit)}">${rank}${suit}</span>`;
 }
 
-/* ── Full deck reference: all 52 cards, one cascading overlapping stack ── */
-const STACK_STEP_X = 15;
-const STACK_STEP_Y = 4;
-
-function renderFullDeck() {
-  const stack = document.getElementById('full-deck-stack');
-  stack.innerHTML = '';
-
-  let i = 0;
-  SUITS.forEach(suit => {
-    RANKS.forEach(rank => {
-      const c = clr(suit);
-      const card = document.createElement('div');
-      card.className = `stack-card ${c}`;
-      card.style.left = `${i * STACK_STEP_X}px`;
-      card.style.top  = `${i * STACK_STEP_Y}px`;
-      card.style.zIndex = i;
-      card.innerHTML = `<span class="sr">${rank}</span><span class="ss">${suit}</span>`;
-      stack.appendChild(card);
-      i++;
-    });
-  });
-
-  const cardCount = SUITS.length * RANKS.length;
-  stack.style.width  = `${52 + (cardCount - 1) * STACK_STEP_X}px`;
-  stack.style.height = `${74 + (cardCount - 1) * STACK_STEP_Y}px`;
-}
-
 /* ── Render the shared head row (8 blank cards) ── */
 function renderHead() {
   const panel = document.getElementById('head-panel');
@@ -506,26 +482,7 @@ function renderCards() {
   panel.innerHTML = '';
   panel.appendChild(title);
 
-  SUITS.forEach((suit, si) => {
-    const section = document.createElement('div');
-    section.className = 'suit-section';
-
-    const lbl = document.createElement('div');
-    lbl.className = `suit-label ${clr(suit)}`;
-    lbl.textContent = `${suit}  ${SUIT_NAMES[si]}`;
-    section.appendChild(lbl);
-
-    const row = document.createElement('div');
-    row.className = 'suit-row';
-    const filter = DECK_PRESETS[activeDeckPreset];
-    RANKS.forEach(rank => {
-      if (!filter || filter.has(rank)) row.appendChild(buildCard(suit, rank));
-    });
-
-    section.appendChild(row);
-    panel.appendChild(section);
-  });
-
+  // Special cards first
   const extraSection = document.createElement('div');
   extraSection.className = 'suit-section';
   const extraLbl = document.createElement('div');
@@ -540,6 +497,36 @@ function renderCards() {
   extraRow.appendChild(buildBlackCard());
   extraSection.appendChild(extraRow);
   panel.appendChild(extraSection);
+
+  // Full deck: all cards in one overlapping horizontal line, click to assign/remove
+  const deckSection = document.createElement('div');
+  deckSection.className = 'suit-section';
+  const deckLbl = document.createElement('div');
+  deckLbl.className = 'suit-label';
+  deckLbl.textContent = 'Full Deck';
+  deckSection.appendChild(deckLbl);
+
+  const deckScroll = document.createElement('div');
+  deckScroll.className = 'deck-line-scroll';
+  const deckLine = document.createElement('div');
+  deckLine.className = 'deck-line';
+
+  const filter = DECK_PRESETS[activeDeckPreset];
+  let i = 0;
+  SUITS.forEach(suit => {
+    RANKS.forEach(rank => {
+      if (!filter || filter.has(rank)) {
+        deckLine.appendChild(buildCard(suit, rank, i));
+        i++;
+      }
+    });
+  });
+  deckLine.style.width  = `${52 + Math.max(0, i - 1) * DECK_STEP_X}px`;
+  deckLine.style.height = '74px';
+
+  deckScroll.appendChild(deckLine);
+  deckSection.appendChild(deckScroll);
+  panel.appendChild(deckSection);
 }
 
 function assignCard(id, slotIndex) {
@@ -627,5 +614,4 @@ syncCardButtons();
 renderHead();
 renderLabels();
 renderCards();
-renderFullDeck();
 updateStatus();

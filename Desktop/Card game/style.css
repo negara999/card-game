@@ -5,11 +5,10 @@ body {
   background: #1a1a2e;
   color: #eee;
   font-family: 'Georgia', serif;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ── Header ── */
@@ -174,21 +173,19 @@ header h1 {
 .head-slot.filled.suit-club    .hr, .head-slot.filled.suit-club    .hs { color: #111; }
 .head-slot.filled.suit-diamond .hr, .head-slot.filled.suit-diamond .hs { color: #d44fa0; }
 
-/* ── Full deck reference: all 52 cards, one cascading stack ── */
-.full-deck-panel {
-  flex-shrink: 0;
-  background: #16213e;
-  border-top: 1px solid #2a2a4a;
-  padding: 16px 24px 28px;
+/* ── Full deck: all 52 cards, one interactive overlapping line ── */
+.deck-line-scroll {
   overflow-x: auto;
+  overflow-y: visible;
+  padding: 14px 4px 4px;
 }
-.full-deck-panel .panel-title { margin-bottom: 14px; }
 
-.full-deck-stack {
+.deck-line {
   position: relative;
+  flex-shrink: 0;
 }
 
-.stack-card {
+.deck-card {
   position: absolute;
   top: 0;
   left: 0;
@@ -198,29 +195,44 @@ header h1 {
   border-radius: 6px;
   border: 1px solid #d0d0d0;
   box-shadow: 1px 2px 6px rgba(0,0,0,0.5);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
+}
+.deck-card:hover:not(.placed) {
+  transform: translateY(-10px);
+  box-shadow: 2px 12px 18px rgba(0,0,0,0.45);
+  z-index: 999 !important;
+}
+.deck-card.placed {
+  opacity: 0.25;
+  filter: grayscale(0.4);
+}
+.deck-card.placed:hover {
+  transform: translateY(-4px);
+  opacity: 0.5;
+  filter: grayscale(0);
+  z-index: 999 !important;
+}
+.deck-card.suit-club    { background: #b8d4a0; }
+.deck-card.suit-diamond { background: #c8dce8; }
+
+.deck-corner {
+  position: absolute;
+  top: 4px;
+  left: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  cursor: default;
-  user-select: none;
-  transition: transform 0.12s, box-shadow 0.12s;
+  line-height: 1;
+  pointer-events: none;
 }
-.stack-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 2px 12px 18px rgba(0,0,0,0.5);
-  z-index: 999 !important;
-}
-.stack-card.suit-club    { background: #b8d4a0; }
-.stack-card.suit-diamond { background: #c8dce8; }
-
-.stack-card .sr { font-size: 20px; font-weight: bold; font-family: 'Georgia', serif; line-height: 1; }
-.stack-card .ss { font-size: 18px; line-height: 1; }
-.stack-card.suit-spade   .sr, .stack-card.suit-spade   .ss { color: #1a7a1a; }
-.stack-card.suit-heart   .sr, .stack-card.suit-heart   .ss { color: #cc1111; }
-.stack-card.suit-club    .sr, .stack-card.suit-club    .ss { color: #111111; }
-.stack-card.suit-diamond .sr, .stack-card.suit-diamond .ss { color: #d44fa0; }
+.deck-corner .dr { font-size: 14px; font-weight: bold; font-family: 'Georgia', serif; }
+.deck-corner .ds { font-size: 12px; margin-top: 1px; }
+.deck-card.suit-spade   .dr, .deck-card.suit-spade   .ds { color: #1a7a1a; }
+.deck-card.suit-heart   .dr, .deck-card.suit-heart   .ds { color: #cc1111; }
+.deck-card.suit-club    .dr, .deck-card.suit-club    .ds { color: #111111; }
+.deck-card.suit-diamond .dr, .deck-card.suit-diamond .ds { color: #d44fa0; }
 
 /* ── Main layout ── */
 .main {
