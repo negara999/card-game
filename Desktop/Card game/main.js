@@ -368,6 +368,34 @@ function splitSubLabel(cardId) {
   return `<span class="${clr(suit)}">${rank}${suit}</span>`;
 }
 
+/* ── Full deck reference: all 52 cards, one cascading overlapping stack ── */
+const STACK_STEP_X = 15;
+const STACK_STEP_Y = 4;
+
+function renderFullDeck() {
+  const stack = document.getElementById('full-deck-stack');
+  stack.innerHTML = '';
+
+  let i = 0;
+  SUITS.forEach(suit => {
+    RANKS.forEach(rank => {
+      const c = clr(suit);
+      const card = document.createElement('div');
+      card.className = `stack-card ${c}`;
+      card.style.left = `${i * STACK_STEP_X}px`;
+      card.style.top  = `${i * STACK_STEP_Y}px`;
+      card.style.zIndex = i;
+      card.innerHTML = `<span class="sr">${rank}</span><span class="ss">${suit}</span>`;
+      stack.appendChild(card);
+      i++;
+    });
+  });
+
+  const cardCount = SUITS.length * RANKS.length;
+  stack.style.width  = `${52 + (cardCount - 1) * STACK_STEP_X}px`;
+  stack.style.height = `${74 + (cardCount - 1) * STACK_STEP_Y}px`;
+}
+
 /* ── Render the shared head row (8 blank cards) ── */
 function renderHead() {
   const panel = document.getElementById('head-panel');
@@ -599,4 +627,5 @@ syncCardButtons();
 renderHead();
 renderLabels();
 renderCards();
+renderFullDeck();
 updateStatus();
