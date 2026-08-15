@@ -46,8 +46,14 @@ const splitContents = {};  // splitId → [cardId|null, cardId|null]
 const splitSlots    = {};  // cardId  → { splitId, half }
 let activeSplitTarget = null; // { splitId, half } | null  — which half is waiting for a card
 
+// Shared "head" row: 8 independent blank cards, each can hold any playing card
+const HEAD_COUNT = 8;
+const headSlots = new Array(HEAD_COUNT).fill(null); // index → cardId | null
+let activeHeadTarget = null; // index | null — which head slot is waiting for a card
+
 function isInSplit(id) { return id in splitSlots; }
-function isPlaced(id)  { return (id in assignments) || isInSplit(id); }
+function isInHead(id)  { return headSlots.includes(id); }
+function isPlaced(id)  { return (id in assignments) || isInSplit(id) || isInHead(id); }
 
 function countAssigned(i) { return Object.values(assignments).filter(x => x === i).length; }
 
@@ -90,9 +96,18 @@ function onCardClick(id) {
   // Card already in a split sub-slot → remove from split
   if (isInSplit(id)) { removeSplitSubCard(id); return; }
 
+  // Card already in a head slot → remove from head
+  if (isInHead(id)) { removeCardFromHeadById(id); return; }
+
   // Split target active → fill that specific half
   if (activeSplitTarget) {
     assignToSplit(id, activeSplitTarget.splitId, activeSplitTarget.half);
+    return;
+  }
+
+  // Head target active → fill that specific blank slot
+  if (activeHeadTarget !== null) {
+    assignToHead(id);
     return;
   }
 
@@ -127,12 +142,50 @@ function removeSplitSubCard(cardId) {
   updateStatus();
 }
 
+/* ── Head row assignment (8 shared blank slots) ── */
+function assignToHead(cardId) {
+  headSlots[activeHeadTarget] = cardId;
+  activeHeadTarget = null;
+  renderHead();
+  renderCards();
+  updateStatus();
+}
+
+function removeFromHead(index) {
+  headSlots[index] = null;
+  renderHead();
+  renderCards();
+  updateStatus();
+}
+
+function removeCardFromHeadById(cardId) {
+  const index = headSlots.indexOf(cardId);
+  if (index !== -1) removeFromHead(index);
+}
+
+function toggleHeadTarget(i) {
+  if (activeHeadTarget === i) {
+    activeHeadTarget = null;
+  } else {
+    activeHeadTarget = i;
+    activeSplitTarget = null;
+  }
+  renderHead();
+  renderLabels();
+  updateStatus();
+}
+
 /* ── Status bar ── */
 function updateStatus() {
   const bar = document.getElementById('status-bar');
 
   if (activeSplitTarget) {
     bar.innerHTML = `Click any card to fill <span>Split slot</span> &nbsp;·&nbsp; Click the slot again to cancel`;
+    return;
+  }
+
+  if (activeHeadTarget !== null) {
+    bar.innerHTML = `Click any card to fill <span>Blank slot ${activeHeadTarget + 1}</span> &nbsp;·&nbsp; Click the slot again to cancel`;
     return;
   }
 
@@ -225,6 +278,8 @@ function renderLabels() {
       const half    = +btn.dataset.half;
       activeSplitTarget = (activeSplitTarget && activeSplitTarget.splitId === splitId && activeSplitTarget.half === half)
         ? null : { splitId, half };
+      if (activeSplitTarget) activeHeadTarget = null;
+      renderHead();
       renderLabels();
       updateStatus();
     });
@@ -253,8 +308,11 @@ function renderLabels() {
     Object.keys(assignments).forEach(id => delete assignments[id]);
     Object.keys(splitContents).forEach(id => delete splitContents[id]);
     Object.keys(splitSlots).forEach(id => delete splitSlots[id]);
+    headSlots.fill(null);
     activeSplitTarget = null;
+    activeHeadTarget = null;
     nextLabel = 0;
+    renderHead();
     renderLabels();
     renderCards();
     updateStatus();
@@ -308,6 +366,40 @@ function miniCardHTML(id) {
 function splitSubLabel(cardId) {
   const { rank, suit } = parseId(cardId);
   return `<span class="${clr(suit)}">${rank}${suit}</span>`;
+}
+
+/* ── Render the shared head row (8 blank cards) ── */
+function renderHead() {
+  const panel = document.getElementById('head-panel');
+  const title = panel.querySelector('.panel-title');
+  panel.innerHTML = '';
+  panel.appendChild(title);
+
+  const row = document.createElement('div');
+  row.className = 'head-row';
+
+  headSlots.forEach((cardId, i) => {
+    const box = document.createElement('div');
+
+    if (cardId) {
+      const { rank, suit } = parseId(cardId);
+      const c = clr(suit);
+      box.className = `head-slot filled ${c}`;
+      box.title = 'Click to clear';
+      box.innerHTML = `<span class="hr">${rank}</span><span class="hs">${suit}</span>`;
+      box.addEventListener('click', () => removeFromHead(i));
+    } else {
+      const active = activeHeadTarget === i;
+      box.className = `head-slot empty${active ? ' active' : ''}`;
+      box.title = active ? 'Click to cancel' : 'Click, then pick a card';
+      box.innerHTML = `<span class="head-label">BLANK</span>`;
+      box.addEventListener('click', () => toggleHeadTarget(i));
+    }
+
+    row.appendChild(box);
+  });
+
+  panel.appendChild(row);
 }
 
 /* ── Blank card ── */
@@ -488,7 +580,13 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
         const { rank } = parseId(cardId);
         if (!filter.has(rank)) removeSplitSubCard(cardId);
       });
+      headSlots.forEach((cardId, i) => {
+        if (!cardId) return;
+        const { rank } = parseId(cardId);
+        if (!filter.has(rank)) headSlots[i] = null;
+      });
     }
+    renderHead();
     renderLabels();
     renderCards();
     updateStatus();
@@ -498,6 +596,7 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
 // Init
 syncButtons();
 syncCardButtons();
+renderHead();
 renderLabels();
 renderCards();
 updateStatus();
