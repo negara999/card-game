@@ -163,6 +163,8 @@ header h1 {
   transform: translateY(-4px);
   box-shadow: 2px 8px 14px rgba(0,0,0,0.4);
 }
+.head-slot.filled.suit-spade   { background: #e8ddc0; }
+.head-slot.filled.suit-heart   { background: #f7dde2; }
 .head-slot.filled.suit-club    { background: #b8d4a0; }
 .head-slot.filled.suit-diamond { background: #c8dce8; }
 
@@ -214,6 +216,8 @@ header h1 {
   filter: grayscale(0);
   z-index: 999 !important;
 }
+.deck-card.suit-spade   { background: #e8ddc0; }
+.deck-card.suit-heart   { background: #f7dde2; }
 .deck-card.suit-club    { background: #b8d4a0; }
 .deck-card.suit-diamond { background: #c8dce8; }
 
@@ -759,6 +763,8 @@ header h1 {
 .mini-card.suit-club    .mr, .mini-card.suit-club    .ms { color: #111; }
 .mini-card.suit-diamond .mr, .mini-card.suit-diamond .ms { color: #d44fa0; }
 
+.mini-card.suit-spade   { background: #e8ddc0; }
+.mini-card.suit-heart   { background: #f7dde2; }
 .mini-card.suit-club    { background: #b8d4a0; }
 .mini-card.suit-diamond { background: #c8dce8; }
 
