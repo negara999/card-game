@@ -68,6 +68,22 @@ function clr(suit)       {
 function cid(suit, rank) { return `${rank}|${suit}`; }
 function parseId(id)     { const [rank, suit] = id.split('|'); return { rank, suit }; }
 
+// Persistent display order of the Full Deck line — mutated by cutDeckAt()
+const deckOrder = [];
+SUITS.forEach(suit => RANKS.forEach(rank => deckOrder.push(cid(suit, rank))));
+
+/* ── Cut the deck at the selected card: cards to its right move to the
+     front, cards to its left follow, the selected card lands last ── */
+function cutDeckAt(id) {
+  const k = deckOrder.indexOf(id);
+  if (k === -1) return;
+  const rightPart = deckOrder.slice(k + 1);
+  const leftPart  = deckOrder.slice(0, k);
+  const selected  = deckOrder[k];
+  deckOrder.length = 0;
+  deckOrder.push(...rightPart, ...leftPart, selected);
+}
+
 /* ── Build a deck-line card (overlapping, interactive) ── */
 const DECK_STEP_X = 16;
 
@@ -102,6 +118,9 @@ function onCardClick(id) {
 
   // Card already in a head slot → remove from head
   if (isInHead(id)) { removeCardFromHeadById(id); return; }
+
+  // Selecting a fresh card from the deck line → cut the deck at it
+  cutDeckAt(id);
 
   // Split target active → fill that specific half
   if (activeSplitTarget) {
@@ -516,13 +535,12 @@ function renderCards() {
 
   const filter = DECK_PRESETS[activeDeckPreset];
   let i = 0;
-  SUITS.forEach(suit => {
-    RANKS.forEach(rank => {
-      if (!filter || filter.has(rank)) {
-        deckLine.appendChild(buildCard(suit, rank, i));
-        i++;
-      }
-    });
+  deckOrder.forEach(cardId => {
+    const { rank, suit } = parseId(cardId);
+    if (!filter || filter.has(rank)) {
+      deckLine.appendChild(buildCard(suit, rank, i));
+      i++;
+    }
   });
   deckLine.style.width  = `${52 + Math.max(0, i - 1) * DECK_STEP_X}px`;
   deckLine.style.height = '74px';
