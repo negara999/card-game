@@ -171,6 +171,7 @@ header h1 {
 .hr { font-size: 19px; font-weight: bold; font-family: Arial; line-height: 1.1; pointer-events: none; }
 .hs { font-size: 18px; line-height: 1; pointer-events: none; }
 .head-slot.filled.suit-spade   .hr, .head-slot.filled.suit-spade   .hs { color: #1a7a1a; }
+.head-slot.filled.suit-spade   .hs { font-size: 21px; }
 .head-slot.filled.suit-heart   .hr, .head-slot.filled.suit-heart   .hs { color: #cc1111; }
 .head-slot.filled.suit-club    .hr, .head-slot.filled.suit-club    .hs { color: #111; }
 .head-slot.filled.suit-diamond .hr, .head-slot.filled.suit-diamond .hs { color: #d44fa0; }
@@ -234,6 +235,7 @@ header h1 {
 .deck-corner .dr { font-size: 17px; font-weight: bold; font-family: 'Georgia', serif; }
 .deck-corner .ds { font-size: 15px; margin-top: 1px; }
 .deck-card.suit-spade   .dr, .deck-card.suit-spade   .ds { color: #1a7a1a; }
+.deck-card.suit-spade   .ds { font-size: 18px; }
 .deck-card.suit-heart   .dr, .deck-card.suit-heart   .ds { color: #cc1111; }
 .deck-card.suit-club    .dr, .deck-card.suit-club    .ds { color: #111111; }
 .deck-card.suit-diamond .dr, .deck-card.suit-diamond .ds { color: #d44fa0; }
@@ -759,6 +761,7 @@ header h1 {
 .mr { font-size: 16px; font-weight: bold; font-family: Arial; line-height: 1.1; }
 .ms { font-size: 16px; line-height: 1; }
 .mini-card.suit-spade   .mr, .mini-card.suit-spade   .ms { color: #1a7a1a; }
+.mini-card.suit-spade   .ms { font-size: 19px; }
 .mini-card.suit-heart   .mr, .mini-card.suit-heart   .ms { color: #cc1111; }
 .mini-card.suit-club    .mr, .mini-card.suit-club    .ms { color: #111; }
 .mini-card.suit-diamond .mr, .mini-card.suit-diamond .ms { color: #d44fa0; }
