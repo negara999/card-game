@@ -150,14 +150,14 @@ function removeSplitSubCard(cardId) {
 function assignToHead(cardId) {
   headSlots[activeHeadTarget] = cardId;
   activeHeadTarget = null;
-  renderHead();
+  renderLabels();
   renderCards();
   updateStatus();
 }
 
 function removeFromHead(index) {
   headSlots[index] = null;
-  renderHead();
+  renderLabels();
   renderCards();
   updateStatus();
 }
@@ -174,7 +174,6 @@ function toggleHeadTarget(i) {
     activeHeadTarget = i;
     activeSplitTarget = null;
   }
-  renderHead();
   renderLabels();
   updateStatus();
 }
@@ -266,6 +265,8 @@ function renderLabels() {
     panel.appendChild(slot);
   }
 
+  panel.appendChild(buildHeadSection());
+
   // × remove buttons (player-level)
   panel.querySelectorAll('.rm').forEach(btn => {
     btn.addEventListener('click', e => {
@@ -283,7 +284,6 @@ function renderLabels() {
       activeSplitTarget = (activeSplitTarget && activeSplitTarget.splitId === splitId && activeSplitTarget.half === half)
         ? null : { splitId, half };
       if (activeSplitTarget) activeHeadTarget = null;
-      renderHead();
       renderLabels();
       updateStatus();
     });
@@ -316,7 +316,6 @@ function renderLabels() {
     activeSplitTarget = null;
     activeHeadTarget = null;
     nextLabel = 0;
-    renderHead();
     renderLabels();
     renderCards();
     updateStatus();
@@ -372,12 +371,15 @@ function splitSubLabel(cardId) {
   return `<span class="${clr(suit)}">${rank}${suit}</span>`;
 }
 
-/* ── Render the shared head row (8 blank cards) ── */
-function renderHead() {
-  const panel = document.getElementById('head-panel');
-  const title = panel.querySelector('.panel-title');
-  panel.innerHTML = '';
-  panel.appendChild(title);
+/* ── Build the shared head section (8 blank cards), placed under the player slots ── */
+function buildHeadSection() {
+  const wrap = document.createElement('div');
+  wrap.className = 'head-section';
+
+  const title = document.createElement('div');
+  title.className = 'panel-title head-section-title';
+  title.textContent = 'Blank Cards';
+  wrap.appendChild(title);
 
   const row = document.createElement('div');
   row.className = 'head-row';
@@ -403,7 +405,8 @@ function renderHead() {
     row.appendChild(box);
   });
 
-  panel.appendChild(row);
+  wrap.appendChild(row);
+  return wrap;
 }
 
 /* ── Blank card ── */
@@ -601,7 +604,6 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
         if (!filter.has(rank)) headSlots[i] = null;
       });
     }
-    renderHead();
     renderLabels();
     renderCards();
     updateStatus();
@@ -611,7 +613,6 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
 // Init
 syncButtons();
 syncCardButtons();
-renderHead();
 renderLabels();
 renderCards();
 updateStatus();
