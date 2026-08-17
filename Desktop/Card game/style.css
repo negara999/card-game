@@ -176,7 +176,27 @@ header h1 {
 .head-slot.filled.suit-club    .hr, .head-slot.filled.suit-club    .hs { color: #111; }
 .head-slot.filled.suit-diamond .hr, .head-slot.filled.suit-diamond .hs { color: #d44fa0; }
 
-/* ── Custom Row: 52 numbered slots, reorderable by clicking a filled one ── */
+/* ── Custom Table: 1–52 numbered slots, reorderable by clicking a filled one ── */
+.row-count-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: #888;
+  flex-shrink: 0;
+}
+.row-count-controls .ctrl-btn {
+  width: 22px;
+  height: 22px;
+  font-size: 0.9rem;
+}
+.row-count-controls #row-count {
+  color: gold;
+  font-weight: bold;
+  min-width: 16px;
+  text-align: center;
+}
+
 .row-row {
   display: flex;
   gap: 6px;

@@ -51,11 +51,29 @@ const HEAD_COUNT = 8;
 const headSlots = new Array(HEAD_COUNT).fill(null); // index → cardId | null
 let activeHeadTarget = null; // index | null — which head slot is waiting for a card
 
-// Custom Row: 52 numbered slots, each can hold any playing card. Clicking a
-// filled slot rotates the row so that slot (and everything after it) leads.
-const ROW_COUNT = 52;
-const rowSlots = new Array(ROW_COUNT).fill(null); // index → cardId | null
+// Custom Table: numbered slots (count selectable 1–52), each can hold any
+// playing card. Clicking a filled slot rotates the row so that slot (and
+// everything after it) leads.
+const ROW_MIN = 1, ROW_MAX = 52;
+let rowCount = 12;
+const rowSlots = new Array(rowCount).fill(null); // index → cardId | null
 let activeRowTarget = null; // index | null — which row slot is waiting for a card
+
+/* ── Resize the Custom Table. Shrinking drops the trailing slots (any cards
+     in them simply become unplaced again); growing appends empty slots. ── */
+function setRowCount(n) {
+  n = Math.max(ROW_MIN, Math.min(ROW_MAX, n));
+  if (n === rowSlots.length) return;
+  if (n < rowSlots.length) {
+    rowSlots.length = n;
+  } else {
+    while (rowSlots.length < n) rowSlots.push(null);
+  }
+  rowCount = n;
+  if (activeRowTarget !== null && activeRowTarget >= rowCount) activeRowTarget = null;
+  renderCards();
+  updateStatus();
+}
 
 function isInSplit(id) { return id in splitSlots; }
 function isInHead(id)  { return headSlots.includes(id); }
@@ -134,7 +152,7 @@ function onCardClick(id) {
   // Card already in a head slot → remove from head
   if (isInHead(id)) { removeCardFromHeadById(id); return; }
 
-  // Card already in the Custom Row → remove from it
+  // Card already in the Custom Table → remove from it
   if (isInRow(id)) { removeCardFromRowById(id); return; }
 
   // Selecting a fresh card from the deck line → cut the deck at it
@@ -223,7 +241,7 @@ function toggleHeadTarget(i) {
   updateStatus();
 }
 
-/* ── Custom Row (52 numbered slots) ── */
+/* ── Custom Table (selectable slot count) ── */
 function assignToRow(cardId) {
   rowSlots[activeRowTarget] = cardId;
   activeRowTarget = null;
@@ -256,7 +274,7 @@ function toggleRowTarget(i) {
   updateStatus();
 }
 
-/* ── Cut the Custom Row at the clicked slot: that card and everything
+/* ── Cut the Custom Table at the clicked slot: that card and everything
      after it move to the start of the row, forming a new arrangement ── */
 function cutRowAt(index) {
   const rotated = [...rowSlots.slice(index), ...rowSlots.slice(0, index)];
@@ -279,7 +297,7 @@ function updateStatus() {
   }
 
   if (activeRowTarget !== null) {
-    bar.innerHTML = `Click any card to fill <span>Row slot ${activeRowTarget + 1}</span> &nbsp;·&nbsp; Click the slot again to cancel`;
+    bar.innerHTML = `Click any card to fill <span>Table slot ${activeRowTarget + 1}</span> &nbsp;·&nbsp; Click the slot again to cancel`;
     return;
   }
 
@@ -503,16 +521,34 @@ function buildHeadSection() {
   return wrap;
 }
 
-/* ── Build the Custom Row section: 52 numbered slots. Clicking a filled slot
-     cuts the row at that point instead of removing the card. ── */
+/* ── Build the Custom Table section: a selectable number of numbered slots
+     (1–52). Clicking a filled slot cuts the row at that point instead of
+     removing the card. ── */
 function buildRowSection() {
   const wrap = document.createElement('div');
   wrap.className = 'suit-section';
 
+  const headerRow = document.createElement('div');
+  headerRow.className = 'suit-label-row';
+
   const lbl = document.createElement('div');
   lbl.className = 'suit-label';
-  lbl.textContent = 'Custom Row';
-  wrap.appendChild(lbl);
+  lbl.textContent = 'Custom Table';
+  headerRow.appendChild(lbl);
+
+  const controls = document.createElement('div');
+  controls.className = 'row-count-controls';
+  controls.innerHTML = `
+    <span>Slots:</span>
+    <button class="ctrl-btn" id="btn-row-dec"${rowCount <= ROW_MIN ? ' disabled' : ''}>&#8722;</button>
+    <span id="row-count">${rowCount}</span>
+    <button class="ctrl-btn" id="btn-row-inc"${rowCount >= ROW_MAX ? ' disabled' : ''}>&#43;</button>
+  `;
+  controls.querySelector('#btn-row-dec').addEventListener('click', () => setRowCount(rowCount - 1));
+  controls.querySelector('#btn-row-inc').addEventListener('click', () => setRowCount(rowCount + 1));
+  headerRow.appendChild(controls);
+
+  wrap.appendChild(headerRow);
 
   const row = document.createElement('div');
   row.className = 'row-row';
