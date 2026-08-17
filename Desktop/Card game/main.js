@@ -51,9 +51,16 @@ const HEAD_COUNT = 8;
 const headSlots = new Array(HEAD_COUNT).fill(null); // index → cardId | null
 let activeHeadTarget = null; // index | null — which head slot is waiting for a card
 
+// Custom Row: 52 numbered slots, each can hold any playing card. Clicking a
+// filled slot rotates the row so that slot (and everything after it) leads.
+const ROW_COUNT = 52;
+const rowSlots = new Array(ROW_COUNT).fill(null); // index → cardId | null
+let activeRowTarget = null; // index | null — which row slot is waiting for a card
+
 function isInSplit(id) { return id in splitSlots; }
 function isInHead(id)  { return headSlots.includes(id); }
-function isPlaced(id)  { return (id in assignments) || isInSplit(id) || isInHead(id); }
+function isInRow(id)   { return rowSlots.includes(id); }
+function isPlaced(id)  { return (id in assignments) || isInSplit(id) || isInHead(id) || isInRow(id); }
 
 function countAssigned(i) { return Object.values(assignments).filter(x => x === i).length; }
 
@@ -127,6 +134,9 @@ function onCardClick(id) {
   // Card already in a head slot → remove from head
   if (isInHead(id)) { removeCardFromHeadById(id); return; }
 
+  // Card already in the Custom Row → remove from it
+  if (isInRow(id)) { removeCardFromRowById(id); return; }
+
   // Selecting a fresh card from the deck line → cut the deck at it
   cutDeckAt(id);
 
@@ -139,6 +149,12 @@ function onCardClick(id) {
   // Head target active → fill that specific blank slot
   if (activeHeadTarget !== null) {
     assignToHead(id);
+    return;
+  }
+
+  // Row target active → fill that specific numbered slot
+  if (activeRowTarget !== null) {
+    assignToRow(id);
     return;
   }
 
@@ -200,9 +216,52 @@ function toggleHeadTarget(i) {
   } else {
     activeHeadTarget = i;
     activeSplitTarget = null;
+    activeRowTarget = null;
   }
   renderLabels();
+  renderCards();
   updateStatus();
+}
+
+/* ── Custom Row (52 numbered slots) ── */
+function assignToRow(cardId) {
+  rowSlots[activeRowTarget] = cardId;
+  activeRowTarget = null;
+  renderLabels();
+  renderCards();
+  updateStatus();
+}
+
+function removeFromRow(index) {
+  rowSlots[index] = null;
+  renderLabels();
+  renderCards();
+  updateStatus();
+}
+
+function removeCardFromRowById(cardId) {
+  const index = rowSlots.indexOf(cardId);
+  if (index !== -1) removeFromRow(index);
+}
+
+function toggleRowTarget(i) {
+  if (activeRowTarget === i) {
+    activeRowTarget = null;
+  } else {
+    activeRowTarget = i;
+    activeSplitTarget = null;
+    activeHeadTarget = null;
+  }
+  renderCards();
+  updateStatus();
+}
+
+/* ── Cut the Custom Row at the clicked slot: that card and everything
+     after it move to the start of the row, forming a new arrangement ── */
+function cutRowAt(index) {
+  const rotated = [...rowSlots.slice(index), ...rowSlots.slice(0, index)];
+  rowSlots.splice(0, rowSlots.length, ...rotated);
+  renderCards();
 }
 
 /* ── Status bar ── */
@@ -216,6 +275,11 @@ function updateStatus() {
 
   if (activeHeadTarget !== null) {
     bar.innerHTML = `Click any card to fill <span>Blank slot ${activeHeadTarget + 1}</span> &nbsp;·&nbsp; Click the slot again to cancel`;
+    return;
+  }
+
+  if (activeRowTarget !== null) {
+    bar.innerHTML = `Click any card to fill <span>Row slot ${activeRowTarget + 1}</span> &nbsp;·&nbsp; Click the slot again to cancel`;
     return;
   }
 
@@ -310,8 +374,9 @@ function renderLabels() {
       const half    = +btn.dataset.half;
       activeSplitTarget = (activeSplitTarget && activeSplitTarget.splitId === splitId && activeSplitTarget.half === half)
         ? null : { splitId, half };
-      if (activeSplitTarget) activeHeadTarget = null;
+      if (activeSplitTarget) { activeHeadTarget = null; activeRowTarget = null; }
       renderLabels();
+      renderCards();
       updateStatus();
     });
   });
@@ -340,8 +405,10 @@ function renderLabels() {
     Object.keys(splitContents).forEach(id => delete splitContents[id]);
     Object.keys(splitSlots).forEach(id => delete splitSlots[id]);
     headSlots.fill(null);
+    rowSlots.fill(null);
     activeSplitTarget = null;
     activeHeadTarget = null;
+    activeRowTarget = null;
     nextLabel = 0;
     renderLabels();
     renderCards();
@@ -427,6 +494,51 @@ function buildHeadSection() {
       box.title = active ? 'Click to cancel' : 'Click, then pick a card';
       box.innerHTML = `<span class="head-label">BLANK</span>`;
       box.addEventListener('click', () => toggleHeadTarget(i));
+    }
+
+    row.appendChild(box);
+  });
+
+  wrap.appendChild(row);
+  return wrap;
+}
+
+/* ── Build the Custom Row section: 52 numbered slots. Clicking a filled slot
+     cuts the row at that point instead of removing the card. ── */
+function buildRowSection() {
+  const wrap = document.createElement('div');
+  wrap.className = 'suit-section';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'suit-label';
+  lbl.textContent = 'Custom Row';
+  wrap.appendChild(lbl);
+
+  const row = document.createElement('div');
+  row.className = 'row-row';
+
+  rowSlots.forEach((cardId, i) => {
+    const box = document.createElement('div');
+
+    if (cardId) {
+      const { rank, suit } = parseId(cardId);
+      const c = clr(suit);
+      box.className = `row-slot filled ${c}`;
+      box.title = 'Click to move this card and everything after it to the front';
+      box.innerHTML = `
+        <span class="hr">${rank}</span><span class="hs">${suit}</span>
+        <i class="rm" title="Remove">&#215;</i>`;
+      box.addEventListener('click', () => cutRowAt(i));
+      box.querySelector('.rm').addEventListener('click', e => {
+        e.stopPropagation();
+        removeFromRow(i);
+      });
+    } else {
+      const active = activeRowTarget === i;
+      box.className = `row-slot empty${active ? ' active' : ''}`;
+      box.title = active ? 'Click to cancel' : 'Click, then pick a card';
+      box.innerHTML = `<span class="row-label">${i + 1}</span>`;
+      box.addEventListener('click', () => toggleRowTarget(i));
     }
 
     row.appendChild(box);
@@ -555,6 +667,8 @@ function renderCards() {
 
   deckSection.appendChild(deckRows);
   panel.appendChild(deckSection);
+
+  panel.appendChild(buildRowSection());
 }
 
 /* ── Build one row of the Full Deck line: each suit's cards stay grouped
@@ -652,6 +766,11 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
         if (!cardId) return;
         const { rank } = parseId(cardId);
         if (!filter.has(rank)) headSlots[i] = null;
+      });
+      rowSlots.forEach((cardId, i) => {
+        if (!cardId) return;
+        const { rank } = parseId(cardId);
+        if (!filter.has(rank)) rowSlots[i] = null;
       });
     }
     renderLabels();
