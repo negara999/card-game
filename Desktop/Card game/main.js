@@ -68,28 +68,28 @@ function clr(suit)       {
 function cid(suit, rank) { return `${rank}|${suit}`; }
 function parseId(id)     { const [rank, suit] = id.split('|'); return { rank, suit }; }
 
-// Persistent display order of the Full Deck line — mutated by cutDeckAt()
-const deckOrder = [];
-SUITS.forEach(suit => RANKS.forEach(rank => deckOrder.push(cid(suit, rank))));
-const ORIGINAL_DECK_ORDER = [...deckOrder];
+// Persistent per-suit display order — mutated by cutDeckAt(). Cutting is scoped
+// to the selected card's own suit so same-suit cards always stay grouped together.
+const suitOrder = {};
+SUITS.forEach(suit => { suitOrder[suit] = RANKS.map(rank => cid(suit, rank)); });
 
-/* ── Restore the deck line to its original, uncut order ── */
+/* ── Restore every suit's order to its original, uncut A→K order ── */
 function resetDeckOrder() {
-  deckOrder.length = 0;
-  deckOrder.push(...ORIGINAL_DECK_ORDER);
+  SUITS.forEach(suit => { suitOrder[suit] = RANKS.map(rank => cid(suit, rank)); });
   renderCards();
 }
 
-/* ── Cut the deck at the selected card: cards to its right move to the
-     front, cards to its left follow, the selected card lands last ── */
+/* ── Cut the selected card's suit: cards to its right (within that suit) move
+     to the front, cards to its left follow, the selected card lands last ── */
 function cutDeckAt(id) {
-  const k = deckOrder.indexOf(id);
+  const { suit } = parseId(id);
+  const order = suitOrder[suit];
+  const k = order.indexOf(id);
   if (k === -1) return;
-  const rightPart = deckOrder.slice(k + 1);
-  const leftPart  = deckOrder.slice(0, k);
-  const selected  = deckOrder[k];
-  deckOrder.length = 0;
-  deckOrder.push(...rightPart, ...leftPart, selected);
+  const rightPart = order.slice(k + 1);
+  const leftPart  = order.slice(0, k);
+  const selected  = order[k];
+  suitOrder[suit] = [...rightPart, ...leftPart, selected];
 }
 
 /* ── Build a deck-line card (overlapping, interactive) ── */
@@ -548,28 +548,32 @@ function renderCards() {
   const filter = DECK_PRESETS[activeDeckPreset];
   const deckRows = document.createElement('div');
   deckRows.className = 'deck-rows';
-  deckRows.appendChild(buildDeckRow(new Set(['♠','♥']), filter));
-  deckRows.appendChild(buildDeckRow(new Set(['♣','♦']), filter));
+  deckRows.appendChild(buildDeckRow(['♠'], filter));
+  deckRows.appendChild(buildDeckRow(['♥'], filter));
+  deckRows.appendChild(buildDeckRow(['♣'], filter));
+  deckRows.appendChild(buildDeckRow(['♦'], filter));
 
   deckSection.appendChild(deckRows);
   panel.appendChild(deckSection);
 }
 
-/* ── Build one row of the Full Deck line, limited to the given suits ── */
-function buildDeckRow(suitSet, filter) {
+/* ── Build one row of the Full Deck line: each suit's cards stay grouped
+     together and in the given suit order, never interleaved ── */
+function buildDeckRow(suits, filter) {
   const deckScroll = document.createElement('div');
   deckScroll.className = 'deck-line-scroll';
   const deckLine = document.createElement('div');
   deckLine.className = 'deck-line';
 
   let i = 0;
-  deckOrder.forEach(cardId => {
-    const { rank, suit } = parseId(cardId);
-    if (!suitSet.has(suit)) return;
-    if (!filter || filter.has(rank)) {
-      deckLine.appendChild(buildCard(suit, rank, i));
-      i++;
-    }
+  suits.forEach(suit => {
+    suitOrder[suit].forEach(cardId => {
+      const { rank } = parseId(cardId);
+      if (!filter || filter.has(rank)) {
+        deckLine.appendChild(buildCard(suit, rank, i));
+        i++;
+      }
+    });
   });
   deckLine.style.width  = `${52 + Math.max(0, i - 1) * DECK_STEP_X}px`;
   deckLine.style.height = '74px';

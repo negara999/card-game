@@ -238,10 +238,10 @@ header h1 {
   line-height: 1;
   pointer-events: none;
 }
-.deck-corner .dr { font-size: 17px; font-weight: bold; font-family: 'Georgia', serif; }
-.deck-corner .ds { font-size: 15px; margin-top: 1px; }
+.deck-corner .dr { font-size: 20px; font-weight: bold; font-family: 'Georgia', serif; }
+.deck-corner .ds { font-size: 18px; margin-top: 1px; }
 .deck-card.suit-spade   .dr, .deck-card.suit-spade   .ds { color: #1a7a1a; }
-.deck-card.suit-spade   .ds { font-size: 18px; }
+.deck-card.suit-spade   .ds { font-size: 21px; }
 .deck-card.suit-heart   .dr, .deck-card.suit-heart   .ds { color: #cc1111; }
 .deck-card.suit-club    .dr, .deck-card.suit-club    .ds { color: #111111; }
 .deck-card.suit-diamond .dr, .deck-card.suit-diamond .ds { color: #d44fa0; }
