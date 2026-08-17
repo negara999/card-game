@@ -394,6 +394,26 @@ header h1 {
 }
 .suit-label.red { color: #8b2020; }
 
+.suit-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.refresh-btn {
+  background: rgba(255,255,255,0.08);
+  color: #aaa;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  font-family: 'Georgia', serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.refresh-btn:hover { background: #e94560; color: white; border-color: #e94560; }
+
 .suit-row { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* ══════════════════════════════

@@ -71,6 +71,14 @@ function parseId(id)     { const [rank, suit] = id.split('|'); return { rank, su
 // Persistent display order of the Full Deck line — mutated by cutDeckAt()
 const deckOrder = [];
 SUITS.forEach(suit => RANKS.forEach(rank => deckOrder.push(cid(suit, rank))));
+const ORIGINAL_DECK_ORDER = [...deckOrder];
+
+/* ── Restore the deck line to its original, uncut order ── */
+function resetDeckOrder() {
+  deckOrder.length = 0;
+  deckOrder.push(...ORIGINAL_DECK_ORDER);
+  renderCards();
+}
 
 /* ── Cut the deck at the selected card: cards to its right move to the
      front, cards to its left follow, the selected card lands last ── */
@@ -523,10 +531,19 @@ function renderCards() {
   // Full deck: all cards in one overlapping horizontal line, click to assign/remove
   const deckSection = document.createElement('div');
   deckSection.className = 'suit-section';
+  const deckLblRow = document.createElement('div');
+  deckLblRow.className = 'suit-label-row';
   const deckLbl = document.createElement('div');
   deckLbl.className = 'suit-label';
   deckLbl.textContent = 'Full Deck';
-  deckSection.appendChild(deckLbl);
+  const refreshBtn = document.createElement('button');
+  refreshBtn.className = 'refresh-btn';
+  refreshBtn.title = 'Restore original card order';
+  refreshBtn.innerHTML = '&#8635; Refresh';
+  refreshBtn.addEventListener('click', resetDeckOrder);
+  deckLblRow.appendChild(deckLbl);
+  deckLblRow.appendChild(refreshBtn);
+  deckSection.appendChild(deckLblRow);
 
   const deckScroll = document.createElement('div');
   deckScroll.className = 'deck-line-scroll';
