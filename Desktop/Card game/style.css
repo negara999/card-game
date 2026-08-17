@@ -176,7 +176,13 @@ header h1 {
 .head-slot.filled.suit-club    .hr, .head-slot.filled.suit-club    .hs { color: #111; }
 .head-slot.filled.suit-diamond .hr, .head-slot.filled.suit-diamond .hs { color: #d44fa0; }
 
-/* ── Full deck: all 52 cards, one interactive overlapping line ── */
+/* ── Full deck: all 52 cards, split into two interactive overlapping lines ── */
+.deck-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .deck-line-scroll {
   overflow-x: auto;
   overflow-y: visible;

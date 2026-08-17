@@ -545,15 +545,27 @@ function renderCards() {
   deckLblRow.appendChild(refreshBtn);
   deckSection.appendChild(deckLblRow);
 
+  const filter = DECK_PRESETS[activeDeckPreset];
+  const deckRows = document.createElement('div');
+  deckRows.className = 'deck-rows';
+  deckRows.appendChild(buildDeckRow(new Set(['♠','♥']), filter));
+  deckRows.appendChild(buildDeckRow(new Set(['♣','♦']), filter));
+
+  deckSection.appendChild(deckRows);
+  panel.appendChild(deckSection);
+}
+
+/* ── Build one row of the Full Deck line, limited to the given suits ── */
+function buildDeckRow(suitSet, filter) {
   const deckScroll = document.createElement('div');
   deckScroll.className = 'deck-line-scroll';
   const deckLine = document.createElement('div');
   deckLine.className = 'deck-line';
 
-  const filter = DECK_PRESETS[activeDeckPreset];
   let i = 0;
   deckOrder.forEach(cardId => {
     const { rank, suit } = parseId(cardId);
+    if (!suitSet.has(suit)) return;
     if (!filter || filter.has(rank)) {
       deckLine.appendChild(buildCard(suit, rank, i));
       i++;
@@ -563,8 +575,7 @@ function renderCards() {
   deckLine.style.height = '74px';
 
   deckScroll.appendChild(deckLine);
-  deckSection.appendChild(deckScroll);
-  panel.appendChild(deckSection);
+  return deckScroll;
 }
 
 function assignCard(id, slotIndex) {
