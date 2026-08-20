@@ -58,6 +58,7 @@ const ROW_MIN = 1, ROW_MAX = 52;
 let rowCount = 12;
 const rowSlots = new Array(rowCount).fill(null); // index → cardId | null
 let activeRowTarget = null; // index | null — which row slot is waiting for a card
+let rowSlotClickTimer = null; // pending single-click cut, cancelled by a double-click
 
 /* ── Resize the Custom Table. Shrinking drops the trailing slots (any cards
      in them simply become unplaced again); growing appends empty slots. ── */
@@ -283,6 +284,14 @@ function dealRowSlotToPlayer(index) {
   if (activeRowTarget === index) activeRowTarget = null;
   assignCard(cardId, index % labelCount);
   updateStatus();
+}
+
+/* ── Single-click on a filled Custom Table slot: cut the table there, that
+     card and everything after it move to the start, restoring the order. ── */
+function cutRowAt(index) {
+  const rotated = [...rowSlots.slice(index), ...rowSlots.slice(0, index)];
+  rowSlots.splice(0, rowSlots.length, ...rotated);
+  renderCards();
 }
 
 /* ── Table Deck: a second full deck placed beside the Full Deck. Clicking a
@@ -586,13 +595,22 @@ function buildRowSection() {
         ? labelNames[target]
         : `Player ${target + 1}`;
       box.className = `row-slot filled ${c}`;
-      box.title = `Click to deal this card to ${targetName}`;
+      box.title = `Click to cut the table here · Double-click to deal to ${targetName}`;
       box.innerHTML = `
         <span class="hr">${rank}</span><span class="hs">${suit}</span>
         <i class="rm" title="Remove">&#215;</i>`;
-      box.addEventListener('click', () => dealRowSlotToPlayer(i));
+      box.addEventListener('click', e => {
+        if (e.detail > 1) return; // part of a double-click, let dblclick handle it
+        clearTimeout(rowSlotClickTimer);
+        rowSlotClickTimer = setTimeout(() => cutRowAt(i), 220);
+      });
+      box.addEventListener('dblclick', () => {
+        clearTimeout(rowSlotClickTimer);
+        dealRowSlotToPlayer(i);
+      });
       box.querySelector('.rm').addEventListener('click', e => {
         e.stopPropagation();
+        clearTimeout(rowSlotClickTimer);
         removeFromRow(i);
       });
     } else {
