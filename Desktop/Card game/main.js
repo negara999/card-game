@@ -118,7 +118,7 @@ function cutDeckAt(id) {
 }
 
 /* ── Build a deck-line card (overlapping, interactive) ── */
-const DECK_STEP_X = 11;
+const DECK_STEP_X = 16;
 
 function buildCard(suit, rank, index, onClick = onCardClick) {
   const id     = cid(suit, rank);

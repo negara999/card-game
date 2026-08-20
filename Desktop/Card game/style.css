@@ -263,12 +263,14 @@ header h1 {
 /* ── Full deck + Table Deck side by side; each scrolls independently ── */
 .deck-pair {
   display: flex;
-  gap: 20px;
+  gap: 28px;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 .deck-pair > .suit-section {
-  flex: 1;
+  flex: 0 0 auto;
   min-width: 0;
+  max-width: 100%;
 }
 
 .deck-rows {
