@@ -260,7 +260,17 @@ header h1 {
 .row-slot.filled.suit-club    .hr, .row-slot.filled.suit-club    .hs { color: #111; }
 .row-slot.filled.suit-diamond .hr, .row-slot.filled.suit-diamond .hs { color: #d44fa0; }
 
-/* ── Full deck: all 52 cards, split into two interactive overlapping lines ── */
+/* ── Full deck + Table Deck side by side; each scrolls independently ── */
+.deck-pair {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.deck-pair > .suit-section {
+  flex: 1;
+  min-width: 0;
+}
+
 .deck-rows {
   display: flex;
   flex-direction: column;

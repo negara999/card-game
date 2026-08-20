@@ -120,7 +120,7 @@ function cutDeckAt(id) {
 /* ── Build a deck-line card (overlapping, interactive) ── */
 const DECK_STEP_X = 16;
 
-function buildCard(suit, rank, index) {
+function buildCard(suit, rank, index, onClick = onCardClick) {
   const id     = cid(suit, rank);
   const c      = clr(suit);
   const placed = isPlaced(id);
@@ -137,7 +137,7 @@ function buildCard(suit, rank, index) {
       <span class="ds">${suit}</span>
     </div>`;
 
-  div.addEventListener('click', () => onCardClick(id));
+  div.addEventListener('click', () => onClick(id));
   return div;
 }
 
@@ -274,12 +274,34 @@ function toggleRowTarget(i) {
   updateStatus();
 }
 
-/* ── Cut the Custom Table at the clicked slot: that card and everything
-     after it move to the start of the row, forming a new arrangement ── */
-function cutRowAt(index) {
-  const rotated = [...rowSlots.slice(index), ...rowSlots.slice(0, index)];
-  rowSlots.splice(0, rowSlots.length, ...rotated);
+/* ── Deal a filled Custom Table slot straight to its matching player: slot 1
+     → player 1, slot 2 → player 2, ... wrapping around by labelCount. ── */
+function dealRowSlotToPlayer(index) {
+  const cardId = rowSlots[index];
+  if (!cardId) return;
+  rowSlots[index] = null;
+  if (activeRowTarget === index) activeRowTarget = null;
+  assignCard(cardId, index % labelCount);
+  updateStatus();
+}
+
+/* ── Table Deck: a second full deck placed beside the Full Deck. Clicking a
+     card here (instead of assigning it to a player) drops it straight into
+     the next empty Custom Table slot. ── */
+function onTableDeckCardClick(id) {
+  if (id in assignments) { unassignCard(id); return; }
+  if (isInSplit(id)) { removeSplitSubCard(id); return; }
+  if (isInHead(id)) { removeCardFromHeadById(id); return; }
+  if (isInRow(id)) { removeCardFromRowById(id); return; }
+
+  cutDeckAt(id);
+
+  const idx = rowSlots.indexOf(null);
+  if (idx === -1) { updateStatus(); return; } // Custom Table is full
+  rowSlots[idx] = id;
+  activeRowTarget = null;
   renderCards();
+  updateStatus();
 }
 
 /* ── Status bar ── */
@@ -559,12 +581,16 @@ function buildRowSection() {
     if (cardId) {
       const { rank, suit } = parseId(cardId);
       const c = clr(suit);
+      const target = i % labelCount;
+      const targetName = (labelNames[target] !== undefined && labelNames[target] !== '')
+        ? labelNames[target]
+        : `Player ${target + 1}`;
       box.className = `row-slot filled ${c}`;
-      box.title = 'Click to move this card and everything after it to the front';
+      box.title = `Click to deal this card to ${targetName}`;
       box.innerHTML = `
         <span class="hr">${rank}</span><span class="hs">${suit}</span>
         <i class="rm" title="Remove">&#215;</i>`;
-      box.addEventListener('click', () => cutRowAt(i));
+      box.addEventListener('click', () => dealRowSlotToPlayer(i));
       box.querySelector('.rm').addEventListener('click', e => {
         e.stopPropagation();
         removeFromRow(i);
@@ -702,14 +728,36 @@ function renderCards() {
   deckRows.appendChild(buildDeckRow(['♦'], filter));
 
   deckSection.appendChild(deckRows);
-  panel.appendChild(deckSection);
+
+  // Table Deck: same 52 cards, but clicking one deals it straight into the
+  // next empty Custom Table slot instead of assigning it to a player.
+  const tableDeckSection = document.createElement('div');
+  tableDeckSection.className = 'suit-section';
+  const tableDeckLbl = document.createElement('div');
+  tableDeckLbl.className = 'suit-label';
+  tableDeckLbl.textContent = 'Table Deck';
+  tableDeckSection.appendChild(tableDeckLbl);
+
+  const tableDeckRows = document.createElement('div');
+  tableDeckRows.className = 'deck-rows';
+  tableDeckRows.appendChild(buildDeckRow(['♠'], filter, onTableDeckCardClick));
+  tableDeckRows.appendChild(buildDeckRow(['♥'], filter, onTableDeckCardClick));
+  tableDeckRows.appendChild(buildDeckRow(['♣'], filter, onTableDeckCardClick));
+  tableDeckRows.appendChild(buildDeckRow(['♦'], filter, onTableDeckCardClick));
+  tableDeckSection.appendChild(tableDeckRows);
+
+  const deckPair = document.createElement('div');
+  deckPair.className = 'deck-pair';
+  deckPair.appendChild(deckSection);
+  deckPair.appendChild(tableDeckSection);
+  panel.appendChild(deckPair);
 
   panel.appendChild(buildRowSection());
 }
 
-/* ── Build one row of the Full Deck line: each suit's cards stay grouped
-     together and in the given suit order, never interleaved ── */
-function buildDeckRow(suits, filter) {
+/* ── Build one row of a deck line: each suit's cards stay grouped together
+     and in the given suit order, never interleaved ── */
+function buildDeckRow(suits, filter, onClick = onCardClick) {
   const deckScroll = document.createElement('div');
   deckScroll.className = 'deck-line-scroll';
   const deckLine = document.createElement('div');
@@ -720,7 +768,7 @@ function buildDeckRow(suits, filter) {
     suitOrder[suit].forEach(cardId => {
       const { rank } = parseId(cardId);
       if (!filter || filter.has(rank)) {
-        deckLine.appendChild(buildCard(suit, rank, i));
+        deckLine.appendChild(buildCard(suit, rank, i, onClick));
         i++;
       }
     });
