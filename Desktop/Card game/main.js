@@ -301,15 +301,37 @@ function dealRowSlotToPlayer(index) {
   updateStatus();
 }
 
-/* ── Double-click the Custom Table's first slot: deal every filled slot to
-     its matching player, in order — slot 1 → player 1, slot 2 → player 2,
-     wrapping around by labelCount, same target as a single slot deal. ── */
+/* ── Double-click the Custom Table's first slot: deal every filled slot, in
+     order, to players in rotation — respecting each player's card limit —
+     then once players are full, continue into Blank Card slots in order. ── */
 function dealAllRowSlotsToPlayers() {
-  rowSlots.forEach((cardId, i) => {
+  const dealt = new Set();
+
+  rowSlots.forEach(cardId => {
     if (!cardId) return;
-    assignments[cardId] = i % labelCount;
-    rowSlots[i] = null;
+
+    let target = null;
+    for (let checked = 0; checked < labelCount; checked++) {
+      const candidate = (nextLabel + checked) % labelCount;
+      if (countAssigned(candidate) < cardLimit) { target = candidate; break; }
+    }
+    if (target !== null) {
+      assignments[cardId] = target;
+      nextLabel = (target + 1) % labelCount;
+      dealt.add(cardId);
+      return;
+    }
+
+    const blankIdx = headSlots.indexOf(null);
+    if (blankIdx === -1) return; // players and blanks both full, leave this card in the table
+    headSlots[blankIdx] = cardId;
+    dealt.add(cardId);
   });
+
+  rowSlots.forEach((cardId, i) => {
+    if (cardId && dealt.has(cardId)) rowSlots[i] = null;
+  });
+
   activeRowTarget = null;
   renderLabels();
   renderCards();
@@ -624,7 +646,7 @@ function buildRowSection() {
         : `Player ${target + 1}`;
       box.className = `row-slot filled ${c}`;
       box.title = i === 0
-        ? 'Click to cut the table here · Double-click to deal the whole table to players'
+        ? 'Click to cut the table here · Double-click to deal the whole table to players, then Blank Cards'
         : `Click to cut the table here · Double-click to deal to ${targetName}`;
       box.innerHTML = `
         <span class="hr">${rank}</span><span class="hs">${suit}</span>
