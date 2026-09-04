@@ -326,19 +326,13 @@ header h1 {
 
 .deck-corner {
   position: absolute;
-  top: 4px;
-  left: 5px;
+  bottom: 4px;
+  right: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
   line-height: 1;
   pointer-events: none;
-}
-.deck-corner-br {
-  top: auto;
-  left: auto;
-  bottom: 4px;
-  right: 5px;
 }
 .deck-corner .dr { font-size: 20px; font-weight: bold; font-family: 'Georgia', serif; }
 .deck-corner .ds { font-size: 18px; margin-top: 1px; }
@@ -508,19 +502,6 @@ header h1 {
   justify-content: space-between;
   gap: 8px;
 }
-
-.refresh-btn {
-  background: rgba(255,255,255,0.08);
-  color: #aaa;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 5px;
-  padding: 3px 9px;
-  font-size: 0.72rem;
-  font-family: 'Georgia', serif;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-.refresh-btn:hover { background: #e94560; color: white; border-color: #e94560; }
 
 .suit-row { display: flex; flex-wrap: wrap; gap: 6px; }
 

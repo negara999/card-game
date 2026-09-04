@@ -94,29 +94,10 @@ function clr(suit)       {
 function cid(suit, rank) { return `${rank}|${suit}`; }
 function parseId(id)     { const [rank, suit] = id.split('|'); return { rank, suit }; }
 
-// Persistent per-suit display order — mutated by cutDeckAt(). Cutting is scoped
-// to the selected card's own suit so same-suit cards always stay grouped together.
+// Fixed per-suit display order — never reordered by picking a card, so the
+// deck line always stays in its original A→K order (same slots throughout).
 const suitOrder = {};
 SUITS.forEach(suit => { suitOrder[suit] = RANKS.map(rank => cid(suit, rank)); });
-
-/* ── Restore every suit's order to its original, uncut A→K order ── */
-function resetDeckOrder() {
-  SUITS.forEach(suit => { suitOrder[suit] = RANKS.map(rank => cid(suit, rank)); });
-  renderCards();
-}
-
-/* ── Cut the selected card's suit: cards to its right (within that suit) move
-     to the front, cards to its left follow, the selected card lands last ── */
-function cutDeckAt(id) {
-  const { suit } = parseId(id);
-  const order = suitOrder[suit];
-  const k = order.indexOf(id);
-  if (k === -1) return;
-  const rightPart = order.slice(k + 1);
-  const leftPart  = order.slice(0, k);
-  const selected  = order[k];
-  suitOrder[suit] = [...rightPart, ...leftPart, selected];
-}
 
 /* ── Build a deck-line card (overlapping, interactive) ── */
 const DECK_STEP_X = 16;
@@ -134,10 +115,6 @@ function buildCard(suit, rank, index, total, onClick = onCardClick) {
 
   div.innerHTML = `
     <div class="deck-corner">
-      <span class="dr">${rank}</span>
-      <span class="ds">${suit}</span>
-    </div>
-    <div class="deck-corner deck-corner-br">
       <span class="dr">${rank}</span>
       <span class="ds">${suit}</span>
     </div>`;
@@ -159,9 +136,6 @@ function onCardClick(id) {
 
   // Card already in the Custom Table → remove from it
   if (isInRow(id)) { removeCardFromRowById(id); return; }
-
-  // Selecting a fresh card from the deck line → cut the deck at it
-  cutDeckAt(id);
 
   // Split target active → fill that specific half
   if (activeSplitTarget) {
@@ -310,8 +284,6 @@ function onTableDeckCardClick(id) {
   if (isInSplit(id)) { removeSplitSubCard(id); return; }
   if (isInHead(id)) { removeCardFromHeadById(id); return; }
   if (isInRow(id)) { removeCardFromRowById(id); return; }
-
-  cutDeckAt(id);
 
   const idx = rowSlots.indexOf(null);
   if (idx === -1) { updateStatus(); return; } // Custom Table is full
@@ -731,19 +703,10 @@ function renderCards() {
   // Full deck: all cards in one overlapping horizontal line, click to assign/remove
   const deckSection = document.createElement('div');
   deckSection.className = 'suit-section';
-  const deckLblRow = document.createElement('div');
-  deckLblRow.className = 'suit-label-row';
   const deckLbl = document.createElement('div');
   deckLbl.className = 'suit-label';
   deckLbl.textContent = 'Full Deck';
-  const refreshBtn = document.createElement('button');
-  refreshBtn.className = 'refresh-btn';
-  refreshBtn.title = 'Restore original card order';
-  refreshBtn.innerHTML = '&#8635; Refresh';
-  refreshBtn.addEventListener('click', resetDeckOrder);
-  deckLblRow.appendChild(deckLbl);
-  deckLblRow.appendChild(refreshBtn);
-  deckSection.appendChild(deckLblRow);
+  deckSection.appendChild(deckLbl);
 
   const filter = DECK_PRESETS[activeDeckPreset];
   const deckRows = document.createElement('div');
