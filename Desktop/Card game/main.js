@@ -301,6 +301,21 @@ function dealRowSlotToPlayer(index) {
   updateStatus();
 }
 
+/* ── Double-click the Custom Table's first slot: deal every filled slot to
+     its matching player, in order — slot 1 → player 1, slot 2 → player 2,
+     wrapping around by labelCount, same target as a single slot deal. ── */
+function dealAllRowSlotsToPlayers() {
+  rowSlots.forEach((cardId, i) => {
+    if (!cardId) return;
+    assignments[cardId] = i % labelCount;
+    rowSlots[i] = null;
+  });
+  activeRowTarget = null;
+  renderLabels();
+  renderCards();
+  updateStatus();
+}
+
 /* ── Single-click on a filled Custom Table slot: cut the table there, that
      card and everything after it move to the start, restoring the order. ── */
 function cutRowAt(index) {
@@ -608,7 +623,9 @@ function buildRowSection() {
         ? labelNames[target]
         : `Player ${target + 1}`;
       box.className = `row-slot filled ${c}`;
-      box.title = `Click to cut the table here · Double-click to deal to ${targetName}`;
+      box.title = i === 0
+        ? 'Click to cut the table here · Double-click to deal the whole table to players'
+        : `Click to cut the table here · Double-click to deal to ${targetName}`;
       box.innerHTML = `
         <span class="hr">${rank}</span><span class="hs">${suit}</span>
         <i class="rm" title="Remove">&#215;</i>`;
@@ -619,7 +636,8 @@ function buildRowSection() {
       });
       box.addEventListener('dblclick', () => {
         clearTimeout(rowSlotClickTimer);
-        dealRowSlotToPlayer(i);
+        if (i === 0) dealAllRowSlotsToPlayers();
+        else dealRowSlotToPlayer(i);
       });
       box.querySelector('.rm').addEventListener('click', e => {
         e.stopPropagation();
