@@ -121,7 +121,7 @@ function cutDeckAt(id) {
 /* ── Build a deck-line card (overlapping, interactive) ── */
 const DECK_STEP_X = 16;
 
-function buildCard(suit, rank, index, onClick = onCardClick) {
+function buildCard(suit, rank, index, total, onClick = onCardClick) {
   const id     = cid(suit, rank);
   const c      = clr(suit);
   const placed = isPlaced(id);
@@ -130,10 +130,14 @@ function buildCard(suit, rank, index, onClick = onCardClick) {
   div.className = `deck-card ${c}${placed ? ' placed' : ''}`;
   div.dataset.cardId = id;
   div.style.left   = `${index * DECK_STEP_X}px`;
-  div.style.zIndex = index;
+  div.style.zIndex = total - index;
 
   div.innerHTML = `
     <div class="deck-corner">
+      <span class="dr">${rank}</span>
+      <span class="ds">${suit}</span>
+    </div>
+    <div class="deck-corner deck-corner-br">
       <span class="dr">${rank}</span>
       <span class="ds">${suit}</span>
     </div>`;
@@ -211,7 +215,11 @@ function removeSplitSubCard(cardId) {
 /* ── Head row assignment (8 shared blank slots) ── */
 function assignToHead(cardId) {
   headSlots[activeHeadTarget] = cardId;
-  activeHeadTarget = null;
+  let next = null;
+  for (let i = activeHeadTarget + 1; i < HEAD_COUNT; i++) {
+    if (headSlots[i] === null) { next = i; break; }
+  }
+  activeHeadTarget = next;
   renderLabels();
   renderCards();
   updateStatus();
@@ -781,17 +789,20 @@ function buildDeckRow(suits, filter, onClick = onCardClick) {
   const deckLine = document.createElement('div');
   deckLine.className = 'deck-line';
 
-  let i = 0;
+  const cards = [];
   suits.forEach(suit => {
     suitOrder[suit].forEach(cardId => {
       const { rank } = parseId(cardId);
-      if (!filter || filter.has(rank)) {
-        deckLine.appendChild(buildCard(suit, rank, i, onClick));
-        i++;
-      }
+      if (!filter || filter.has(rank)) cards.push({ suit, rank });
     });
   });
-  deckLine.style.width  = `${52 + Math.max(0, i - 1) * DECK_STEP_X}px`;
+
+  const total = cards.length;
+  cards.forEach(({ suit, rank }, i) => {
+    deckLine.appendChild(buildCard(suit, rank, i, total, onClick));
+  });
+
+  deckLine.style.width  = `${52 + Math.max(0, total - 1) * DECK_STEP_X}px`;
   deckLine.style.height = '74px';
 
   deckScroll.appendChild(deckLine);

@@ -334,6 +334,12 @@ header h1 {
   line-height: 1;
   pointer-events: none;
 }
+.deck-corner-br {
+  top: auto;
+  left: auto;
+  bottom: 4px;
+  right: 5px;
+}
 .deck-corner .dr { font-size: 20px; font-weight: bold; font-family: 'Georgia', serif; }
 .deck-corner .ds { font-size: 18px; margin-top: 1px; }
 .deck-card.suit-spade   .dr, .deck-card.suit-spade   .ds { color: #1a7a1a; }
