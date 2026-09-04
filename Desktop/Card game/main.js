@@ -120,6 +120,12 @@ function buildCard(suit, rank, index, total, onClick = onCardClick) {
     </div>`;
 
   div.addEventListener('click', () => onClick(id));
+
+  if (index === 0 && onClick === onCardClick) {
+    div.title = 'Double-click to deal this suit to players, then Blank Cards';
+    div.addEventListener('dblclick', () => autoDealRow(suit));
+  }
+
   return div;
 }
 
@@ -164,6 +170,33 @@ function onCardClick(id) {
   if (target === null) return;
   assignCard(id, target);
   nextLabel = (target + 1) % labelCount;
+  updateStatus();
+}
+
+/* ── Double-click the first (fully shown) card in a Full Deck row: deal every
+     not-yet-placed card in that suit, in order — filling players in rotation
+     first, then once players are full, filling Blank Card slots in order. ── */
+function autoDealRow(suit) {
+  const cards = suitOrder[suit].filter(id => !isPlaced(id));
+
+  for (const id of cards) {
+    let target = null;
+    for (let checked = 0; checked < labelCount; checked++) {
+      const candidate = (nextLabel + checked) % labelCount;
+      if (countAssigned(candidate) < cardLimit) { target = candidate; break; }
+    }
+    if (target !== null) {
+      assignments[id] = target;
+      nextLabel = (target + 1) % labelCount;
+      continue;
+    }
+    const blankIdx = headSlots.indexOf(null);
+    if (blankIdx === -1) break; // players and blanks both full
+    headSlots[blankIdx] = id;
+  }
+
+  renderLabels();
+  renderCards();
   updateStatus();
 }
 
