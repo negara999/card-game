@@ -65,6 +65,7 @@ let rowSlotClickTimer = null; // pending single-click cut, cancelled by a double
 function setRowCount(n) {
   n = Math.max(ROW_MIN, Math.min(ROW_MAX, n));
   if (n === rowSlots.length) return;
+  pushHistory();
   if (n < rowSlots.length) {
     rowSlots.length = n;
   } else {
@@ -74,6 +75,69 @@ function setRowCount(n) {
   if (activeRowTarget !== null && activeRowTarget >= rowCount) activeRowTarget = null;
   renderCards();
   updateStatus();
+}
+
+/* ── Undo/Redo: snapshot every card-placement mutation before it happens so
+     it can be reverted, and the reverted state can be re-applied (redo). ── */
+const HISTORY_LIMIT = 50;
+let undoStack = [];
+let redoStack = [];
+
+function snapshotState() {
+  return {
+    assignments: { ...assignments },
+    splitContents: JSON.parse(JSON.stringify(splitContents)),
+    splitSlots: JSON.parse(JSON.stringify(splitSlots)),
+    headSlots: [...headSlots],
+    rowSlots: [...rowSlots],
+    rowCount,
+    nextLabel,
+    activeSplitTarget: activeSplitTarget ? { ...activeSplitTarget } : null,
+    activeHeadTarget,
+    activeRowTarget,
+  };
+}
+
+function restoreState(snap) {
+  Object.keys(assignments).forEach(k => delete assignments[k]);
+  Object.assign(assignments, snap.assignments);
+
+  Object.keys(splitContents).forEach(k => delete splitContents[k]);
+  Object.assign(splitContents, snap.splitContents);
+
+  Object.keys(splitSlots).forEach(k => delete splitSlots[k]);
+  Object.assign(splitSlots, snap.splitSlots);
+
+  headSlots.splice(0, headSlots.length, ...snap.headSlots);
+  rowSlots.splice(0, rowSlots.length, ...snap.rowSlots);
+  rowCount = snap.rowCount;
+
+  nextLabel        = snap.nextLabel;
+  activeSplitTarget = snap.activeSplitTarget;
+  activeHeadTarget  = snap.activeHeadTarget;
+  activeRowTarget   = snap.activeRowTarget;
+
+  renderLabels();
+  renderCards();
+  updateStatus();
+}
+
+function pushHistory() {
+  undoStack.push(snapshotState());
+  if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+  redoStack = [];
+}
+
+function undoLastChange() {
+  if (undoStack.length === 0) return;
+  redoStack.push(snapshotState());
+  restoreState(undoStack.pop());
+}
+
+function redoLastChange() {
+  if (redoStack.length === 0) return;
+  undoStack.push(snapshotState());
+  restoreState(redoStack.pop());
 }
 
 function isInSplit(id) { return id in splitSlots; }
@@ -178,6 +242,8 @@ function onCardClick(id) {
      first, then once players are full, filling Blank Card slots in order. ── */
 function autoDealRow(suit) {
   const cards = suitOrder[suit].filter(id => !isPlaced(id));
+  if (cards.length === 0) return;
+  pushHistory();
 
   for (const id of cards) {
     let target = null;
@@ -202,6 +268,7 @@ function autoDealRow(suit) {
 
 /* ── Split sub-slot assignment ── */
 function assignToSplit(cardId, splitId, half) {
+  pushHistory();
   splitContents[splitId][half] = cardId;
   splitSlots[cardId] = { splitId, half };
   activeSplitTarget = null;
@@ -211,6 +278,7 @@ function assignToSplit(cardId, splitId, half) {
 }
 
 function removeSplitSubCard(cardId) {
+  pushHistory();
   const { splitId, half } = splitSlots[cardId];
   splitContents[splitId][half] = null;
   delete splitSlots[cardId];
@@ -221,6 +289,7 @@ function removeSplitSubCard(cardId) {
 
 /* ── Head row assignment (8 shared blank slots) ── */
 function assignToHead(cardId) {
+  pushHistory();
   headSlots[activeHeadTarget] = cardId;
   let next = null;
   for (let i = activeHeadTarget + 1; i < HEAD_COUNT; i++) {
@@ -233,6 +302,7 @@ function assignToHead(cardId) {
 }
 
 function removeFromHead(index) {
+  pushHistory();
   headSlots[index] = null;
   renderLabels();
   renderCards();
@@ -259,6 +329,7 @@ function toggleHeadTarget(i) {
 
 /* ── Custom Table (selectable slot count) ── */
 function assignToRow(cardId) {
+  pushHistory();
   rowSlots[activeRowTarget] = cardId;
   activeRowTarget = null;
   renderLabels();
@@ -267,6 +338,7 @@ function assignToRow(cardId) {
 }
 
 function removeFromRow(index) {
+  pushHistory();
   rowSlots[index] = null;
   renderLabels();
   renderCards();
@@ -295,9 +367,12 @@ function toggleRowTarget(i) {
 function dealRowSlotToPlayer(index) {
   const cardId = rowSlots[index];
   if (!cardId) return;
+  pushHistory();
   rowSlots[index] = null;
   if (activeRowTarget === index) activeRowTarget = null;
-  assignCard(cardId, index % labelCount);
+  assignments[cardId] = index % labelCount;
+  renderLabels();
+  renderCards();
   updateStatus();
 }
 
@@ -305,6 +380,8 @@ function dealRowSlotToPlayer(index) {
      order, to players in rotation — respecting each player's card limit —
      then once players are full, continue into Blank Card slots in order. ── */
 function dealAllRowSlotsToPlayers() {
+  if (!rowSlots.some(id => id !== null)) return;
+  pushHistory();
   const dealt = new Set();
 
   rowSlots.forEach(cardId => {
@@ -341,6 +418,8 @@ function dealAllRowSlotsToPlayers() {
 /* ── Single-click on a filled Custom Table slot: cut the table there, that
      card and everything after it move to the start, restoring the order. ── */
 function cutRowAt(index) {
+  if (index === 0) return; // already at the front, nothing to cut
+  pushHistory();
   const rotated = [...rowSlots.slice(index), ...rowSlots.slice(0, index)];
   rowSlots.splice(0, rowSlots.length, ...rotated);
   renderCards();
@@ -357,6 +436,7 @@ function onTableDeckCardClick(id) {
 
   const idx = rowSlots.indexOf(null);
   if (idx === -1) { updateStatus(); return; } // Custom Table is full
+  pushHistory();
   rowSlots[idx] = id;
   activeRowTarget = null;
   renderCards();
@@ -500,6 +580,7 @@ function renderLabels() {
   clearBtn.className = 'clear-all-btn';
   clearBtn.textContent = 'Clear All';
   clearBtn.addEventListener('click', () => {
+    pushHistory();
     Object.keys(assignments).forEach(id => delete assignments[id]);
     Object.keys(splitContents).forEach(id => delete splitContents[id]);
     Object.keys(splitSlots).forEach(id => delete splitSlots[id]);
@@ -650,6 +731,7 @@ function buildRowSection() {
         : `Click to cut the table here · Double-click to deal to ${targetName}`;
       box.innerHTML = `
         <span class="hr">${rank}</span><span class="hs">${suit}</span>
+        <span class="row-slot-num">${i + 1}</span>
         <i class="rm" title="Remove">&#215;</i>`;
       box.addEventListener('click', e => {
         if (e.detail > 1) return; // part of a double-click, let dblclick handle it
@@ -760,10 +842,22 @@ function renderCards() {
   // Special cards first
   const extraSection = document.createElement('div');
   extraSection.className = 'suit-section';
+  const extraLblRow = document.createElement('div');
+  extraLblRow.className = 'suit-label-row';
   const extraLbl = document.createElement('div');
   extraLbl.className = 'suit-label';
   extraLbl.textContent = 'Special';
-  extraSection.appendChild(extraLbl);
+  extraLblRow.appendChild(extraLbl);
+  const historyControls = document.createElement('div');
+  historyControls.className = 'history-controls';
+  historyControls.innerHTML = `
+    <button class="history-btn" id="btn-undo" title="Undo the last change"${undoStack.length === 0 ? ' disabled' : ''}>&#8630; Undo</button>
+    <button class="history-btn" id="btn-redo" title="Redo the last undone change"${redoStack.length === 0 ? ' disabled' : ''}>&#8631; Redo</button>
+  `;
+  historyControls.querySelector('#btn-undo').addEventListener('click', undoLastChange);
+  historyControls.querySelector('#btn-redo').addEventListener('click', redoLastChange);
+  extraLblRow.appendChild(historyControls);
+  extraSection.appendChild(extraLblRow);
   const extraRow = document.createElement('div');
   extraRow.className = 'suit-row';
   extraRow.appendChild(buildBlankCard());
@@ -846,6 +940,7 @@ function buildDeckRow(suits, filter, onClick = onCardClick) {
 }
 
 function assignCard(id, slotIndex) {
+  pushHistory();
   if (id.startsWith('SPLIT|')) splitContents[id] = [null, null];
   assignments[id] = slotIndex;
   renderLabels();
@@ -853,6 +948,7 @@ function assignCard(id, slotIndex) {
 }
 
 function unassignCard(id) {
+  pushHistory();
   if (id.startsWith('SPLIT|')) {
     const contents = splitContents[id] || [];
     contents.forEach(subId => { if (subId) delete splitSlots[subId]; });

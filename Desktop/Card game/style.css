@@ -260,6 +260,19 @@ header h1 {
 .row-slot.filled.suit-club    .hr, .row-slot.filled.suit-club    .hs { color: #111; }
 .row-slot.filled.suit-diamond .hr, .row-slot.filled.suit-diamond .hs { color: #d44fa0; }
 
+.row-slot-num {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+  color: rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+
 /* ── Full deck + Table Deck side by side; each scrolls independently ── */
 .deck-pair {
   display: flex;
@@ -504,6 +517,21 @@ header h1 {
 }
 
 .suit-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.history-controls { display: flex; gap: 6px; }
+.history-btn {
+  background: rgba(255,255,255,0.08);
+  color: #aaa;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  font-family: 'Georgia', serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.history-btn:hover:not(:disabled) { background: #e94560; color: white; border-color: #e94560; }
+.history-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 /* ══════════════════════════════
    PLAYING CARD
