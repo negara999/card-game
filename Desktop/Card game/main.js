@@ -716,6 +716,9 @@ function buildRowSection() {
   row.className = 'row-row';
 
   rowSlots.forEach((cardId, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'row-slot-cell';
+
     const box = document.createElement('div');
 
     if (cardId) {
@@ -731,7 +734,6 @@ function buildRowSection() {
         : `Click to cut the table here · Double-click to deal to ${targetName}`;
       box.innerHTML = `
         <span class="hr">${rank}</span><span class="hs">${suit}</span>
-        <span class="row-slot-num">${i + 1}</span>
         <i class="rm" title="Remove">&#215;</i>`;
       box.addEventListener('click', e => {
         if (e.detail > 1) return; // part of a double-click, let dblclick handle it
@@ -748,15 +750,21 @@ function buildRowSection() {
         clearTimeout(rowSlotClickTimer);
         removeFromRow(i);
       });
+      cell.appendChild(box);
+      const numLbl = document.createElement('span');
+      numLbl.className = 'row-slot-num';
+      numLbl.textContent = i + 1;
+      cell.appendChild(numLbl);
     } else {
       const active = activeRowTarget === i;
       box.className = `row-slot empty${active ? ' active' : ''}`;
       box.title = active ? 'Click to cancel' : 'Click, then pick a card';
       box.innerHTML = `<span class="row-label">${i + 1}</span>`;
       box.addEventListener('click', () => toggleRowTarget(i));
+      cell.appendChild(box);
     }
 
-    row.appendChild(box);
+    row.appendChild(cell);
   });
 
   wrap.appendChild(row);
@@ -842,12 +850,16 @@ function renderCards() {
   // Special cards first
   const extraSection = document.createElement('div');
   extraSection.className = 'suit-section';
-  const extraLblRow = document.createElement('div');
-  extraLblRow.className = 'suit-label-row';
   const extraLbl = document.createElement('div');
   extraLbl.className = 'suit-label';
   extraLbl.textContent = 'Special';
-  extraLblRow.appendChild(extraLbl);
+  extraSection.appendChild(extraLbl);
+  const extraRow = document.createElement('div');
+  extraRow.className = 'suit-row';
+  extraRow.appendChild(buildBlankCard());
+  extraRow.appendChild(buildJokerCard());
+  extraRow.appendChild(buildSplitCard());
+  extraRow.appendChild(buildBlackCard());
   const historyControls = document.createElement('div');
   historyControls.className = 'history-controls';
   historyControls.innerHTML = `
@@ -856,14 +868,7 @@ function renderCards() {
   `;
   historyControls.querySelector('#btn-undo').addEventListener('click', undoLastChange);
   historyControls.querySelector('#btn-redo').addEventListener('click', redoLastChange);
-  extraLblRow.appendChild(historyControls);
-  extraSection.appendChild(extraLblRow);
-  const extraRow = document.createElement('div');
-  extraRow.className = 'suit-row';
-  extraRow.appendChild(buildBlankCard());
-  extraRow.appendChild(buildJokerCard());
-  extraRow.appendChild(buildSplitCard());
-  extraRow.appendChild(buildBlackCard());
+  extraRow.appendChild(historyControls);
   extraSection.appendChild(extraRow);
   panel.appendChild(extraSection);
 
